@@ -117,6 +117,32 @@ Configure registry
 
 The :ref:`registry` component won't start until it's configured with an S3 store.
 
+The AWS_ACCESS_KEY should be associated with a policy such as this to start up:
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:*"
+            ],
+            "Resource": "arn:aws:s3:::deis.us-east-1.listhub.net/*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:ListAllMyBuckets",
+                "s3:CreateBucket"
+            ],
+            "Resource": "arn:aws:s3:::*"
+        }
+    ]
+}
+
+In the case that the bucket specified does not exist it will be created. However
+the bucket will be confirmed to exist by iterating over the list of all buckets.
+
 .. code-block:: console
 
     $ BUCKET=MYS3BUCKET
