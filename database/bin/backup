@@ -3,6 +3,13 @@
 export BACKUP_FREQUENCY=${BACKUP_FREQUENCY:-3h}
 export BACKUPS_TO_RETAIN=${BACKUPS_TO_RETAIN:-5}
 
+WALE_ARG=
+if [ -z $AWS_SECRET_ACCESS_KEY ] && [ -z $AWS_ACCESS_KEY_ID ]; then
+    unset AWS_SECRET_ACCESS_KEY
+    unset AWS_ACCESS_KEY_ID
+    WALE_ARG=--aws-instance-profile
+fi
+
 while true; do
     sleep "$BACKUP_FREQUENCY"
     echo "database: performing a backup..."
@@ -10,9 +17,9 @@ while true; do
         echo "database: database is currently recovering from a backup. Will try again next loop..."
     else
         # perform a backup
-        envdir /etc/wal-e.d/env wal-e backup-push /var/lib/postgresql/9.3/main
+        envdir /etc/wal-e.d/env wal-e $WALE_ARG backup-push /var/lib/postgresql/9.3/main
         # only retain the latest BACKUPS_TO_RETAIN backups
-        envdir /etc/wal-e.d/env wal-e delete --confirm retain $BACKUPS_TO_RETAIN
+        envdir /etc/wal-e.d/env wal-e $WALE_ARG delete --confirm retain $BACKUPS_TO_RETAIN
         echo "database: backup has been completed."
     fi
 done

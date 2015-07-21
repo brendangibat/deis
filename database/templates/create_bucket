@@ -4,12 +4,23 @@ import boto
 import sys
 from boto.s3.connection import OrdinaryCallingFormat
 
+aws_access_key_id='{{ getv "/deis/store/gateway/accessKey" }}'
+aws_secret_access_key='{{ getv "/deis/store/gateway/secretKey" }}'
 
-conn = boto.connect_s3(
-    host='{{ getv "/deis/store/gateway/host" }}',
-    port={{ getv "/deis/store/gateway/port" }},
-    is_secure=False,
-    calling_format=OrdinaryCallingFormat())
+if aws_access_key_id != None && aws_secret_access_key != None:
+    conn = boto.connect_s3(
+        aws_access_key_id='{{ getv "/deis/store/gateway/accessKey" }}',
+        aws_secret_access_key='{{ getv "/deis/store/gateway/secretKey" }}',
+        host='{{ getv "/deis/store/gateway/host" }}',
+        port={{ getv "/deis/store/gateway/port" }},
+        is_secure={{ getv "/deis/store/gateway/secure" }},
+        calling_format=OrdinaryCallingFormat())
+else:
+    conn = boto.connect_s3(
+        host='{{ getv "/deis/store/gateway/host" }}',
+        port={{ getv "/deis/store/gateway/port" }},
+        is_secure={{ getv "/deis/store/gateway/secure" }},
+        calling_format=OrdinaryCallingFormat())
 name = sys.argv[1]
 
 if name not in (bucket.name for bucket in conn.get_all_buckets()):

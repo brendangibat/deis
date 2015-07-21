@@ -45,6 +45,14 @@ etcd_set_default password ${PG_USER_PASS:-changeme123}
 etcd_set_default name ${PG_USER_DB:-deis}
 etcd_set_default bucketName ${BUCKET_NAME}
 
+
+WALE_ARG=
+if [ -z $AWS_SECRET_ACCESS_KEY ] && [ -z $AWS_ACCESS_KEY_ID ]; then
+    unset AWS_SECRET_ACCESS_KEY
+    unset AWS_ACCESS_KEY_ID
+    WALE_ARG=--aws-instance-profile
+fi
+
 # stub out the confd reload script before it gets templated
 echo '#!/bin/sh' > /usr/local/bin/reload
 chmod 0755 /usr/local/bin/reload
@@ -72,13 +80,13 @@ if [[ "$(cat /var/lib/postgresql/9.3/main/initialized 2> /dev/null)" != "$INIT_I
   echo "database: no existing database found or it is outdated."
   # check if there are any backups -- if so, let's restore
   # we could probably do better than just testing number of lines -- one line is just a heading, meaning no backups
-  if [[ `envdir /etc/wal-e.d/env wal-e --terse backup-list | wc -l` -gt "1" ]]; then
+  if [[ `envdir /etc/wal-e.d/env wal-e $WALE_ARG --terse backup-list | wc -l` -gt "1" ]]; then
     echo "database: restoring from backup..."
     rm -rf /var/lib/postgresql/9.3/main
-    sudo -u postgres envdir /etc/wal-e.d/env wal-e backup-fetch /var/lib/postgresql/9.3/main LATEST
+    sudo -u postgres envdir /etc/wal-e.d/env wal-e $WALE_ARG backup-fetch /var/lib/postgresql/9.3/main LATEST
     chown -R postgres:postgres /var/lib/postgresql/9.3/main
     chmod 0700 /var/lib/postgresql/9.3/main
-    echo "restore_command = 'envdir /etc/wal-e.d/env wal-e wal-fetch \"%f\" \"%p\"'" | sudo -u postgres tee /var/lib/postgresql/9.3/main/recovery.conf >/dev/null
+    echo "restore_command = 'envdir /etc/wal-e.d/env wal-e $WALE_ARG wal-fetch \"%f\" \"%p\"'" | sudo -u postgres tee /var/lib/postgresql/9.3/main/recovery.conf >/dev/null
   else
     echo "database: no backups found. Initializing a new database..."
     initial_backup=1
@@ -119,7 +127,7 @@ sleep 1 && while [[ -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".5432\
 if [[ "${initial_backup}" == "1" ]] ; then
   echo "database: performing an initial backup..."
   # perform an initial backup
-  sudo -u postgres envdir /etc/wal-e.d/env wal-e backup-push /var/lib/postgresql/9.3/main
+  sudo -u postgres envdir /etc/wal-e.d/env wal-e $WALE_ARG backup-push /var/lib/postgresql/9.3/main
 fi
 
 sudo -Eu postgres /app/bin/backup &

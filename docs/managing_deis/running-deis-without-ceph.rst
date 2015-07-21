@@ -133,7 +133,8 @@ The :ref:`registry` component won't start until it's configured with an S3 store
     $ deisctl config store set gateway/accessKey=${AWS_ACCESS_KEY} \
                                gateway/secretKey=${AWS_SECRET_KEY} \
                                gateway/host=s3.amazonaws.com \
-                               gateway/port=80
+                               gateway/port=443
+                               gateway/secure=true
 
 Configure database settings
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
