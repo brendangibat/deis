@@ -1,1 +1,1 @@
-http+path://{{ getv "/deis/store/gateway/host" }}:{{ getv "/deis/store/gateway/port" }}
+https+path://{{ getv "/deis/store/gateway/host" }}:{{ getv "/deis/store/gateway/port" }}

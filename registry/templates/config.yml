@@ -99,6 +99,7 @@ ceph-s3: &ceph-s3
     storage_path: /registry
     s3_access_key: {{ getv "/deis/store/gateway/accessKey" }}
     s3_secret_key: {{ getv "/deis/store/gateway/secretKey" }}
+    boto_secure: bool({{ if exists "/deis/store/gateway/secure" }}{{ getv "/deis/store/gateway/secure" }}{{ else }}"true"{{ end }})
     boto_bucket: {{ getv "/deis/registry/bucketName" }}
     boto_host: {{ getv "/deis/store/gateway/host" }}
     boto_port: {{ getv "/deis/store/gateway/port" }}
