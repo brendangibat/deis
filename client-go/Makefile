@@ -1,7 +1,7 @@
 include ../includes.mk
 
 # the filepath to this repository, relative to $GOPATH/src
-repo_path = github.com/deis/deis/client-go
+repo_path = github.com/brendangibat/deis/client-go
 
 GO_FILES = $(wildcard *.go)
 GO_PACKAGES = parser cmd controller/api controller/client $(wildcard controller/models/*)

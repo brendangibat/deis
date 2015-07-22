@@ -1,7 +1,7 @@
 include ../includes.mk
 
 # the filepath to this repository, relative to $GOPATH/src
-repo_path = github.com/deis/deis/cache
+repo_path = github.com/brendangibat/deis/cache
 
 GO_PACKAGES = . tests
 GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))

@@ -212,7 +212,7 @@ Now that you've finished provisioning a cluster, please refer to :ref:`install_d
 start installing the platform.
 
 
-.. _`contrib/linode`: https://github.com/deis/deis/tree/master/contrib/linode
+.. _`contrib/linode`: https://github.com/brendangibat/deis/tree/master/contrib/linode
 .. _`Linode Account Settings`: https://manager.linode.com/account/settings
 .. _`Linode API Keys`: https://manager.linode.com/profile/api
 .. _`pip`: https://pip.pypa.io/en/stable/

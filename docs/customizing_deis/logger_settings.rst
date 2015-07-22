@@ -55,4 +55,4 @@ registry:
 Be sure that your custom image functions in the same way as the `stock logger image`_ shipped with
 Deis. Specifically, ensure that it sets and reads appropriate etcd keys.
 
-.. _`stock logger image`: https://github.com/deis/deis/tree/master/logger
+.. _`stock logger image`: https://github.com/brendangibat/deis/tree/master/logger

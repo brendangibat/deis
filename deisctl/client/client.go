@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/deis/deis/deisctl/backend"
-	"github.com/deis/deis/deisctl/backend/fleet"
-	"github.com/deis/deis/deisctl/cmd"
-	"github.com/deis/deis/deisctl/units"
+	"github.com/brendangibat/deis/deisctl/backend"
+	"github.com/brendangibat/deis/deisctl/backend/fleet"
+	"github.com/brendangibat/deis/deisctl/cmd"
+	"github.com/brendangibat/deis/deisctl/units"
 
 	docopt "github.com/docopt/docopt-go"
 )

@@ -8,7 +8,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/deis/deis/tests/utils"
+	"github.com/brendangibat/deis/tests/utils"
 )
 
 var (
@@ -119,7 +119,7 @@ func appsRunTest(t *testing.T, params *utils.DeisTestConfig) {
 	}
 	utils.CheckList(t, cmd, params, "Hello, 世界", false)
 	utils.Execute(t, "apps:run env", params, true, "GIT_SHA")
-	// run a REALLY large command to test https://github.com/deis/deis/issues/2046
+	// run a REALLY large command to test https://github.com/brendangibat/deis/issues/2046
 	largeString := randomString(1024)
 	utils.Execute(t, "apps:run echo "+largeString, params, false, largeString)
 	if err := utils.Chdir(".."); err != nil {

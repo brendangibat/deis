@@ -15,7 +15,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/coreos/go-etcd/etcd"
 
-	"github.com/deis/deis/router/logger"
+	"github.com/brendangibat/deis/router/logger"
 )
 
 var log = logrus.New()

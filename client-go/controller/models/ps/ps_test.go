@@ -9,9 +9,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/deis/deis/client-go/controller/api"
-	"github.com/deis/deis/client-go/controller/client"
-	"github.com/deis/deis/version"
+	"github.com/brendangibat/deis/client-go/controller/api"
+	"github.com/brendangibat/deis/client-go/controller/client"
+	"github.com/brendangibat/deis/version"
 )
 
 const processesFixture string = `

@@ -40,13 +40,13 @@ main() {
     # if REPOROOT is already in the environment, don't overload it and use that
     if [ -z "$REPOROOT" ];
     then
-        REPOROOT="https://github.com/deis/deis"
+        REPOROOT="https://github.com/brendangibat/deis"
     fi
 
     # if TYPES is already in the environment, don't overload it and use that
     if [ -z "$TYPES" ];
     then
-        # Based on https://github.com/deis/deis/blob/master/CONTRIBUTING.md
+        # Based on https://github.com/brendangibat/deis/blob/master/CONTRIBUTING.md
         # The format is in the form of $shortname;$longname $shortname;longname.
         TYPES="feat(;Features fix(;Fixes docs(;Documentation chore(;Maintenance"
     fi

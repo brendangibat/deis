@@ -11,7 +11,7 @@ function log_phase {
 log_phase "Preparing test environment"
 
 # use GOPATH to determine project root
-export DEIS_ROOT=${GOPATH?}/src/github.com/deis/deis
+export DEIS_ROOT=${GOPATH?}/src/github.com/brendangibat/deis
 echo "DEIS_ROOT=$DEIS_ROOT"
 
 # prepend GOPATH/bin to PATH
@@ -93,7 +93,7 @@ function cleanup {
     if [ "$SKIP_CLEANUP" != true ]; then
         log_phase "Cleaning up"
         set +e
-        ${GOPATH}/src/github.com/deis/deis/tests/bin/destroy-all-vagrants.sh
+        ${GOPATH}/src/github.com/brendangibat/deis/tests/bin/destroy-all-vagrants.sh
         VBoxManage list vms | grep deis | sed -n -e 's/^.* {\(.*\)}/\1/p' | xargs -L1 -I {} VBoxManage unregistervm {} --delete
         vagrant global-status --prune
         docker rm -f -v `docker ps | grep deis- | awk '{print $1}'` 2>/dev/null

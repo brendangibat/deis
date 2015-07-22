@@ -34,8 +34,8 @@ The tests assume that you have Deis' `source code`_ in your ``$GOPATH``:
 
 .. code-block:: console
 
-    $ go get -u -v github.com/deis/deis
-    $ cd $GOPATH/src/github.com/deis/deis
+    $ go get -u -v github.com/brendangibat/deis
+    $ cd $GOPATH/src/github.com/brendangibat/deis
 
 Start a Docker Registry
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -103,7 +103,7 @@ test-integration.sh
 
     >>> Preparing test environment <<<
 
-    DEIS_ROOT=/Users/matt/Projects/src/github.com/deis/deis
+    DEIS_ROOT=/Users/matt/Projects/src/github.com/brendangibat/deis
     DEIS_TEST_APP=example-dockerfile-http
     ...
     >>> Running integration suite <<<
@@ -168,7 +168,7 @@ variables that can affect the tests' behavior. Here are some important ones:
 .. _`integration tests`: http://en.wikipedia.org/wiki/Integration_testing
 .. _`continuous integration`: http://en.wikipedia.org/wiki/Continuous_integration
 .. _boot2docker: http://boot2docker.io/
-.. _`source code`: https://github.com/deis/deis
+.. _`source code`: https://github.com/brendangibat/deis
 .. _`Docker registry`: https://github.com/docker/docker-registry
 .. _`Deis example app`: https://github.com/deis?query=example-
 .. _`s3cmd`: http://s3tools.org/s3cmd

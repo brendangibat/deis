@@ -82,7 +82,7 @@ class DomainTest(TestCase):
             self.assertEqual(0, response.data['count'], msg)
 
     def test_delete_domain_does_not_remove_latest(self):
-        """https://github.com/deis/deis/issues/3239"""
+        """https://github.com/brendangibat/deis/issues/3239"""
         url = '/v1/apps/{app_id}/domains'.format(app_id=self.app_id)
         test_domains = [
             'test-domain.example.com',
@@ -102,7 +102,7 @@ class DomainTest(TestCase):
             Domain.objects.get(domain=test_domains[0])
 
     def test_delete_domain_does_not_remove_others(self):
-        """https://github.com/deis/deis/issues/3475"""
+        """https://github.com/brendangibat/deis/issues/3475"""
         self.test_delete_domain_does_not_remove_latest()
         self.assertEqual(Domain.objects.all().count(), 1)
 

@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/deis/deis/client-go/controller/models/domains"
+	"github.com/brendangibat/deis/client-go/controller/models/domains"
 )
 
 // DomainsList lists domains registered with an app.

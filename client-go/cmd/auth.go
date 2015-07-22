@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/deis/deis/client-go/controller/client"
+	"github.com/brendangibat/deis/client-go/controller/client"
 	"golang.org/x/crypto/ssh/terminal"
 )
 

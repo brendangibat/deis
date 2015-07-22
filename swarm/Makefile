@@ -1,7 +1,7 @@
 include ../includes.mk
 
 # the filepath to this repository, relative to $GOPATH/src
-repo_path = github.com/deis/deis/swarm
+repo_path = github.com/brendangibat/deis/swarm
 
 GO_FILES = $(wildcard *.go)
 GO_PACKAGES =

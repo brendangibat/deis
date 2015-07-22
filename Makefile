@@ -5,7 +5,7 @@
 include includes.mk
 
 # the filepath to this repository, relative to $GOPATH/src
-repo_path = github.com/deis/deis
+repo_path = github.com/brendangibat/deis
 
 GO_PACKAGES = version
 GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))

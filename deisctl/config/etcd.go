@@ -10,7 +10,7 @@ import (
 	"github.com/coreos/fleet/pkg"
 	"github.com/coreos/fleet/ssh"
 	"github.com/coreos/go-etcd/etcd"
-	"github.com/deis/deis/deisctl/backend/fleet"
+	"github.com/brendangibat/deis/deisctl/backend/fleet"
 )
 
 func getTunnelFlag() string {

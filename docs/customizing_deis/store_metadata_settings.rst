@@ -63,4 +63,4 @@ registry:
 Be sure that your custom image functions in the same way as the `stock store-metadata image`_ shipped with
 Deis. Specifically, ensure that it sets and reads appropriate etcd keys.
 
-.. _`stock store-metadata image`: https://github.com/deis/deis/tree/master/store/metadata
+.. _`stock store-metadata image`: https://github.com/brendangibat/deis/tree/master/store/metadata

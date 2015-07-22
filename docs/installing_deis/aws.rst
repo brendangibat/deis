@@ -253,13 +253,13 @@ The following parameters can be changed without replacing all instances in a sta
 
 Please reference the AWS documentation for `more information about CloudFormation stack updates`_.
 
-.. _`#1758`: https://github.com/deis/deis/issues/1758
+.. _`#1758`: https://github.com/brendangibat/deis/issues/1758
 .. _`awscli`: https://github.com/aws/aws-cli
-.. _`contrib/aws`: https://github.com/deis/deis/tree/master/contrib/aws
-.. _`cloudformation.json`: https://github.com/deis/deis/blob/master/contrib/aws/cloudformation.json
+.. _`contrib/aws`: https://github.com/brendangibat/deis/tree/master/contrib/aws
+.. _`cloudformation.json`: https://github.com/brendangibat/deis/blob/master/contrib/aws/cloudformation.json
 .. _`etcd`: https://github.com/coreos/etcd
 .. _`etcd disaster recovery`: https://github.com/coreos/etcd/blob/master/Documentation/admin_guide.md#disaster-recovery
 .. _`PyYAML`: http://pyyaml.org/
-.. _`update-aws-cluster.sh`: https://github.com/deis/deis/blob/master/contrib/aws/update-aws-cluster.sh
+.. _`update-aws-cluster.sh`: https://github.com/brendangibat/deis/blob/master/contrib/aws/update-aws-cluster.sh
 .. _`More information about CloudFormation stack updates`: http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks.html
 .. _`Proxy Protocol`: http://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/enable-proxy-protocol.html

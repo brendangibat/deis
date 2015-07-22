@@ -125,7 +125,7 @@ thejiQz0ThCMBw7QMpVOiSvYAlQG0ATsRYwdTDqENIWKlerOLCSuxmbqe8XeDKhq
         response = self.client.delete(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
         # deleting a wildcard cert should work too (even though they're unsupported right now)
-        # https://github.com/deis/deis/issues/3533
+        # https://github.com/brendangibat/deis/issues/3533
         Certificate.objects.create(owner=self.user,
                                    common_name='*.example.com',
                                    certificate=self.autotest_example_com_cert)

@@ -38,7 +38,7 @@ setup(name='deis',
       description='Command-line Client for Deis, the open PaaS',
       author='Engine Yard',
       author_email='info@deis.io',
-      url='https://github.com/deis/deis',
+      url='https://github.com/brendangibat/deis',
       keywords=[
           'opdemand', 'deis', 'paas', 'cloud', 'coreos', 'docker', 'heroku',
           'aws', 'ec2', 'digitalocean', 'gce', 'azure', 'linode', 'openstack'

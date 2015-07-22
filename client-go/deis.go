@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/deis/deis/client-go/parser"
-	"github.com/deis/deis/version"
+	"github.com/brendangibat/deis/client-go/parser"
+	"github.com/brendangibat/deis/version"
 	docopt "github.com/docopt/docopt-go"
 )
 

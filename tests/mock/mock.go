@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/deis/deis/tests/dockercli"
-	"github.com/deis/deis/tests/etcdutils"
-	"github.com/deis/deis/tests/utils"
+	"github.com/brendangibat/deis/tests/dockercli"
+	"github.com/brendangibat/deis/tests/etcdutils"
+	"github.com/brendangibat/deis/tests/utils"
 
 	"github.com/docker/docker/api/client"
 )

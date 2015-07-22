@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/deis/deis/client-go/controller/api"
+	"github.com/brendangibat/deis/client-go/controller/api"
 )
 
 // Register creates a account on a Deis controller.

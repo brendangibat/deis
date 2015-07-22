@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/deis/deis/client-go/controller/client"
+	"github.com/brendangibat/deis/client-go/controller/client"
 )
 
 func progress() chan bool {

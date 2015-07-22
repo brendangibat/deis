@@ -60,5 +60,5 @@ registry:
 Be sure that your custom image functions in the same way as the `stock builder image`_ shipped with
 Deis. Specifically, ensure that it sets and reads appropriate etcd keys.
 
-.. _`stock builder image`: https://github.com/deis/deis/tree/master/builder
-.. _`#985`: https://github.com/deis/deis/issues/985
+.. _`stock builder image`: https://github.com/brendangibat/deis/tree/master/builder
+.. _`#985`: https://github.com/brendangibat/deis/issues/985

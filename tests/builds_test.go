@@ -11,7 +11,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/deis/deis/tests/utils"
+	"github.com/brendangibat/deis/tests/utils"
 )
 
 var (

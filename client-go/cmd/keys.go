@@ -9,9 +9,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/deis/deis/client-go/controller/api"
-	"github.com/deis/deis/client-go/controller/client"
-	"github.com/deis/deis/client-go/controller/models/keys"
+	"github.com/brendangibat/deis/client-go/controller/api"
+	"github.com/brendangibat/deis/client-go/controller/client"
+	"github.com/brendangibat/deis/client-go/controller/models/keys"
 )
 
 // KeysList lists a user's keys.

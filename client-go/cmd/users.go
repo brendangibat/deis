@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/deis/deis/client-go/controller/client"
-	"github.com/deis/deis/client-go/controller/models/users"
+	"github.com/brendangibat/deis/client-go/controller/client"
+	"github.com/brendangibat/deis/client-go/controller/models/users"
 )
 
 // UsersList lists users registered with the controller.

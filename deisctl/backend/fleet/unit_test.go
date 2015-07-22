@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/coreos/fleet/schema"
-	"github.com/deis/deis/deisctl/units"
+	"github.com/brendangibat/deis/deisctl/units"
 )
 
 func TestUnits(t *testing.T) {

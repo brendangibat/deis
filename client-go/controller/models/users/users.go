@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/deis/deis/client-go/controller/api"
-	"github.com/deis/deis/client-go/controller/client"
+	"github.com/brendangibat/deis/client-go/controller/api"
+	"github.com/brendangibat/deis/client-go/controller/client"
 )
 
 // List users registered with the controller.

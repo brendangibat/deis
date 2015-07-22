@@ -321,7 +321,7 @@ var md = `
 
 Deis (pronounced DAY-iss) is an open source PaaS that makes it easy to deploy and manage applications on your own servers. Deis builds upon [Docker](http://docker.io/) and [CoreOS](http://coreos.com) to provide a lightweight PaaS with a [Heroku-inspired](http://heroku.com) workflow.
 
-[![Current Release](http://img.shields.io/badge/release-v0.12.0-blue.svg)](https://github.com/deis/deis/releases/tag/v0.12.0)
+[![Current Release](http://img.shields.io/badge/release-v0.12.0-blue.svg)](https://github.com/brendangibat/deis/releases/tag/v0.12.0)
 
 ![Deis Graphic](https://s3-us-west-2.amazonaws.com/deis-images/deis-graphic.png)
 `
@@ -331,7 +331,7 @@ var mdAfter = `
 
 Deis (pronounced DAY-iss) is an open source PaaS that makes it easy to deploy and manage applications on your own servers. Deis builds upon [Docker](http://docker.io/) and [CoreOS](http://coreos.com) to provide a lightweight PaaS with a [Heroku-inspired](http://heroku.com) workflow.
 
-[![Current Release](http://img.shields.io/badge/release-v0.15.1-blue.svg)](https://github.com/deis/deis/releases/tag/v0.15.1)
+[![Current Release](http://img.shields.io/badge/release-v0.15.1-blue.svg)](https://github.com/brendangibat/deis/releases/tag/v0.15.1)
 
 ![Deis Graphic](https://s3-us-west-2.amazonaws.com/deis-images/deis-graphic.png)
 `

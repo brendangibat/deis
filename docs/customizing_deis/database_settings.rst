@@ -65,4 +65,4 @@ registry:
 Be sure that your custom image functions in the same way as the `stock database image`_ shipped with
 Deis. Specifically, ensure that it sets and reads appropriate etcd keys.
 
-.. _`stock database image`: https://github.com/deis/deis/tree/master/database
+.. _`stock database image`: https://github.com/brendangibat/deis/tree/master/database

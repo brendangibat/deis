@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/deis/deis/builder"
+	"github.com/brendangibat/deis/builder"
 )
 
 const (

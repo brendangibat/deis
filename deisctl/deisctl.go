@@ -8,10 +8,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/deis/deis/deisctl/backend/fleet"
-	"github.com/deis/deis/deisctl/client"
-	"github.com/deis/deis/deisctl/utils"
-	"github.com/deis/deis/version"
+	"github.com/brendangibat/deis/deisctl/backend/fleet"
+	"github.com/brendangibat/deis/deisctl/client"
+	"github.com/brendangibat/deis/deisctl/utils"
+	"github.com/brendangibat/deis/version"
 
 	docopt "github.com/docopt/docopt-go"
 )

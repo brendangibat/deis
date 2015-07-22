@@ -81,4 +81,4 @@ running that process.
 .. _`Docker Image`: https://docs.docker.com/introduction/understanding-docker/
 .. _`DockerHub`: https://registry.hub.docker.com/
 .. _`CMD instruction`: https://docs.docker.com/reference/builder/#cmd
-.. _`issue 1156`: https://github.com/deis/deis/issues/1156
+.. _`issue 1156`: https://github.com/brendangibat/deis/issues/1156

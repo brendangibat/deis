@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/deis/deis/client-go/controller/api"
+	"github.com/brendangibat/deis/client-go/controller/api"
 )
 
 func TestGetKey(t *testing.T) {

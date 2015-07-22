@@ -67,4 +67,4 @@ registry:
 Be sure that your custom image functions in the same way as the `stock store-gateway image`_ shipped with
 Deis. Specifically, ensure that it sets and reads appropriate etcd keys.
 
-.. _`stock store-gateway image`: https://github.com/deis/deis/tree/master/store/gateway
+.. _`stock store-gateway image`: https://github.com/brendangibat/deis/tree/master/store/gateway

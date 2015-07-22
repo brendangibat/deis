@@ -182,5 +182,5 @@ Install Deis Platform
 Now that you've finished provisioning a cluster, please refer to :ref:`install_deis_platform` to
 start installing the platform.
 
-.. _`contrib/openstack`: https://github.com/deis/deis/tree/master/contrib/openstack
+.. _`contrib/openstack`: https://github.com/brendangibat/deis/tree/master/contrib/openstack
 .. _`Shlomo Hakim`: https://github.com/shakim

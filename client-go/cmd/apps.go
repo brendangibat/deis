@@ -6,12 +6,12 @@ import (
 	"os"
 	"strings"
 
-	"github.com/deis/deis/pkg/prettyprint"
+	"github.com/brendangibat/deis/pkg/prettyprint"
 
-	"github.com/deis/deis/client-go/controller/api"
-	"github.com/deis/deis/client-go/controller/client"
-	"github.com/deis/deis/client-go/controller/models/apps"
-	"github.com/deis/deis/client-go/controller/models/config"
+	"github.com/brendangibat/deis/client-go/controller/api"
+	"github.com/brendangibat/deis/client-go/controller/client"
+	"github.com/brendangibat/deis/client-go/controller/models/apps"
+	"github.com/brendangibat/deis/client-go/controller/models/config"
 )
 
 // AppCreate creates an app.

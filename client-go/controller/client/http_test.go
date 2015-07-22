@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/deis/deis/version"
+	"github.com/brendangibat/deis/version"
 )
 
 type fakeHTTPServer struct{}

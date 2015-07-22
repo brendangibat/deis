@@ -8,9 +8,9 @@ import (
 	"path"
 	"regexp"
 
-	"github.com/deis/deis/logger/syslog"
+	"github.com/brendangibat/deis/logger/syslog"
 
-	"github.com/deis/deis/logger/drain"
+	"github.com/brendangibat/deis/logger/drain"
 )
 
 // LogRoot is the log path to store logs.

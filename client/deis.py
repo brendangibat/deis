@@ -75,7 +75,7 @@ from termcolor import colored
 import urllib3.contrib.pyopenssl
 
 # Don't throw IOError when a pipe closes
-# https://github.com/deis/deis/issues/3764
+# https://github.com/brendangibat/deis/issues/3764
 import signal
 if hasattr(signal, 'SIGPIPE') and hasattr(signal, 'SIG_DFL'):
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)

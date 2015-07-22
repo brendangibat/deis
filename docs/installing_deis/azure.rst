@@ -96,7 +96,7 @@ Now that you've finished provisioning a cluster, please refer to :ref:`install_d
 start installing the platform.
 
 .. _`management certificates tab`: https://manage.windowsazure.com/#Workspaces/AdminTasks/ListManagementCertificates
-.. _`contrib/azure`: https://github.com/deis/deis/tree/master/contrib/azure
+.. _`contrib/azure`: https://github.com/brendangibat/deis/tree/master/contrib/azure
 .. _`etcd`: https://github.com/coreos/etcd
 .. _`etcd disaster recovery`: https://github.com/coreos/etcd/blob/master/Documentation/admin_guide.md#disaster-recovery
 .. _`region`: http://azure.microsoft.com/en-us/regions/

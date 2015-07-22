@@ -35,7 +35,7 @@ The Deis maintainers, however, will not accept bounties on this project
 but are more than happy to help community members attempting bounties.
 
 
-.. _`on Github`: https://github.com/deis/deis
+.. _`on Github`: https://github.com/brendangibat/deis
 .. _`Engine Yard`: https://deis.com/community
 .. _`BDFL`: http://en.wikipedia.org/wiki/Benevolent_Dictator_for_Life
 .. _`Gabriel Monroy`: https://github.com/gabrtv

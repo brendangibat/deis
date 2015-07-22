@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/coreos/go-etcd/etcd"
-	"github.com/deis/deis/logger/syslogd"
+	"github.com/brendangibat/deis/logger/syslogd"
 )
 
 var (

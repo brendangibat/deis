@@ -8,7 +8,7 @@ limited audience, or be too experimental to be included in Deis' core.
 This does not preclude their usefulness.
 
 Please add any issues you find with this software to the
-[Deis project](https://github.com/deis/deis/issues).
+[Deis project](https://github.com/brendangibat/deis/issues).
 
 ## Community Contributions
 

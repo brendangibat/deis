@@ -5,7 +5,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/deis/deis/version"
+	"github.com/brendangibat/deis/version"
 )
 
 func locateSettingsFile() string {

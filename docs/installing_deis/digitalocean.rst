@@ -149,8 +149,8 @@ Now that you've finished provisioning a cluster, please refer to :ref:`install_d
 start installing the platform.
 
 
-.. _`contrib/digitalocean`: https://github.com/deis/deis/tree/master/contrib/digitalocean
+.. _`contrib/digitalocean`: https://github.com/brendangibat/deis/tree/master/contrib/digitalocean
 .. _`docl`: https://github.com/nathansamson/docl#readme
-.. _`Deis Control Utility`: https://github.com/deis/deis/tree/master/deisctl#readme
+.. _`Deis Control Utility`: https://github.com/brendangibat/deis/tree/master/deisctl#readme
 .. _`DNS control panel`: https://cloud.digitalocean.com/domains
 .. _`this tutorial`: https://www.digitalocean.com/community/tutorials/how-to-set-up-a-host-name-with-digitalocean

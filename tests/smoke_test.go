@@ -12,7 +12,7 @@ import (
 	"testing"
 	"text/template"
 
-	"github.com/deis/deis/tests/utils"
+	"github.com/brendangibat/deis/tests/utils"
 )
 
 // A test case is a relative directory plus a command that is expected to

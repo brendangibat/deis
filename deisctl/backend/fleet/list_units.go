@@ -6,7 +6,7 @@ import (
 
 	"github.com/coreos/fleet/machine"
 	"github.com/coreos/fleet/schema"
-	"github.com/deis/deis/deisctl/units"
+	"github.com/brendangibat/deis/deisctl/units"
 )
 
 const (

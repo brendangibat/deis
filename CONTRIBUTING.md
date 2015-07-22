@@ -21,7 +21,7 @@ Additionally, see the [Troubleshooting Deis][troubleshooting] documentation for 
 
 Our official support channels are:
 
-- GitHub issues: https://github.com/deis/deis/issues/new
+- GitHub issues: https://github.com/brendangibat/deis/issues/new
 - IRC: #[deis](irc://irc.freenode.org:6667/#deis) IRC channel on freenode.org
 
 When opening an issue or asking for help on IRC, it's helpful to provide debug output from your cluster.

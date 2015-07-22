@@ -3,7 +3,7 @@ package parser
 import (
 	"fmt"
 
-	"github.com/deis/deis/client-go/cmd"
+	"github.com/brendangibat/deis/client-go/cmd"
 	docopt "github.com/docopt/docopt-go"
 )
 

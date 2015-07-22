@@ -5,7 +5,7 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	"github.com/deis/deis/client-go/controller/models/builds"
+	"github.com/brendangibat/deis/client-go/controller/models/builds"
 )
 
 // BuildsList lists an app's builds.

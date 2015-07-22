@@ -1,6 +1,6 @@
 include ../includes.mk
 
-repo_path = github.com/deis/deis/pkg
+repo_path = github.com/brendangibat/deis/pkg
 
 GO_PACKAGES = prettyprint time
 GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))

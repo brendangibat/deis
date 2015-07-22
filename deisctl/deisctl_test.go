@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/deis/deis/version"
+	"github.com/brendangibat/deis/version"
 )
 
 // commandOutput returns stdout for a deisctl command line as a string.

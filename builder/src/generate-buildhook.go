@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/deis/deis/builder"
+	"github.com/brendangibat/deis/builder"
 )
 
 func assert(err error) {

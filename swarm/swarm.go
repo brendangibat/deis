@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/coreos/go-etcd/etcd"
-	"github.com/deis/deis/tests/utils"
+	"github.com/brendangibat/deis/tests/utils"
 )
 
 //Response struct

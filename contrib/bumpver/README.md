@@ -57,4 +57,4 @@ anything to version control. You can also check the
 most up-to-date list of files to bump.
 
 Please add any issues you find with this software to the
-[Deis project](https://github.com/deis/deis/issues).
+[Deis project](https://github.com/brendangibat/deis/issues).

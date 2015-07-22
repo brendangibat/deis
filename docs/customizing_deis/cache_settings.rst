@@ -61,4 +61,4 @@ registry:
 Be sure that your custom image functions in the same way as the `stock cache image`_ shipped with
 Deis. Specifically, ensure that it sets and reads appropriate etcd keys.
 
-.. _`stock cache image`: https://github.com/deis/deis/tree/master/cache
+.. _`stock cache image`: https://github.com/brendangibat/deis/tree/master/cache

@@ -81,6 +81,6 @@ The :ref:`Router` component includes a firewall to help thwart attacks. It can b
 ``deisctl config router set firewall/enabled=true``. For more information, see the `router README`_
 and :ref:`router_settings`.
 
-.. _`#986`: https://github.com/deis/deis/issues/986
-.. _`contrib/util/custom-firewall.sh`: https://github.com/deis/deis/blob/master/contrib/util/custom-firewall.sh
-.. _`router README`: https://github.com/deis/deis/blob/master/router/README.md
+.. _`#986`: https://github.com/brendangibat/deis/issues/986
+.. _`contrib/util/custom-firewall.sh`: https://github.com/brendangibat/deis/blob/master/contrib/util/custom-firewall.sh
+.. _`router README`: https://github.com/brendangibat/deis/blob/master/router/README.md

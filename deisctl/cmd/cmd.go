@@ -13,10 +13,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/deis/deis/deisctl/backend"
-	"github.com/deis/deis/deisctl/config"
-	"github.com/deis/deis/deisctl/units"
-	"github.com/deis/deis/deisctl/utils"
+	"github.com/brendangibat/deis/deisctl/backend"
+	"github.com/brendangibat/deis/deisctl/config"
+	"github.com/brendangibat/deis/deisctl/units"
+	"github.com/brendangibat/deis/deisctl/utils"
 )
 
 const (

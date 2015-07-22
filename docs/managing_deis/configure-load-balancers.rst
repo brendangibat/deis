@@ -38,4 +38,4 @@ Google Compute Engine
 The provisioning instructions for `Google Compute Engine`_ include steps to create a load balancer.
 It is not possible to change the timeout of the load balancer in Google Compute Engine at the moment.
 
-.. _`Google Compute Engine`: https://github.com/deis/deis/tree/master/contrib/gce#readme
+.. _`Google Compute Engine`: https://github.com/brendangibat/deis/tree/master/contrib/gce#readme

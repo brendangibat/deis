@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/deis/deis/deisctl/utils"
+	"github.com/brendangibat/deis/deisctl/utils"
 )
 
 // fileKeys define config keys to be read from local files

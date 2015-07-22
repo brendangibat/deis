@@ -133,7 +133,7 @@ in Go, the best place to put it is in ``$GOPATH/src/github.com/deis/``
 
 .. note::
 
-    By checking out the forked copy into the namespace ``github.com/deis/deis``,
+    By checking out the forked copy into the namespace ``github.com/brendangibat/deis``,
     we are tricking the Go toolchain into seeing our fork as the "official"
     Deis tree.
 
@@ -143,14 +143,14 @@ for doing this, but the `most common`_ is to add an ``upstream`` remote:
 
 .. code-block:: console
 
-    $ git remote add upstream https://github.com/deis/deis.git
+    $ git remote add upstream https://github.com/brendangibat/deis.git
 
 For the sake of simplicity, you may want to point an environment variable to
 your Deis code:
 
 .. code-block:: console
 
-    export DEIS=$GOPATH/src/github.com/deis/deis
+    export DEIS=$GOPATH/src/github.com/brendangibat/deis
 
 Throughout the rest of this document, ``$DEIS`` refers to that location.
 
@@ -438,10 +438,10 @@ Pull Requests
 Please read :ref:`standards`. It contains a checklist of things you should do
 when proposing a change to Deis.
 
-.. _`easy-fix`: https://github.com/deis/deis/issues?labels=easy-fix&state=open
-.. _`deisctl`: https://github.com/deis/deis/tree/master/deisctl
-.. _`fork the Deis repository`: https://github.com/deis/deis/fork
+.. _`easy-fix`: https://github.com/brendangibat/deis/issues?labels=easy-fix&state=open
+.. _`deisctl`: https://github.com/brendangibat/deis/tree/master/deisctl
+.. _`fork the Deis repository`: https://github.com/brendangibat/deis/fork
 .. _`Python 2.7`: https://www.python.org/downloads/release/python-279/
-.. _`running the tests`: https://github.com/deis/deis/tree/master/tests#readme
-.. _`pull request`: https://github.com/deis/deis/pulls
+.. _`running the tests`: https://github.com/brendangibat/deis/tree/master/tests#readme
+.. _`pull request`: https://github.com/brendangibat/deis/pulls
 .. _`most common`: https://help.github.com/articles/fork-a-repo/

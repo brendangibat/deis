@@ -11,7 +11,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/deis/deis/deisctl/units"
+	"github.com/brendangibat/deis/deisctl/units"
 )
 
 type backendStub struct {

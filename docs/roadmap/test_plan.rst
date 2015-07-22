@@ -40,7 +40,7 @@ Test items
 
 Within the scope of this master test plan are these items:
 
-- The Deis project codebase at https://github.com/deis/deis
+- The Deis project codebase at https://github.com/brendangibat/deis
 - The Docker containers that constitute Deis
 - The assembled Deis platform on a CoreOS cluster
 - The HTML documentation set for Deis
@@ -208,7 +208,7 @@ pull requests against this documentation.
 .. _integration: http://en.wikipedia.org/wiki/Integration_testing
 .. _acceptance: http://en.wikipedia.org/wiki/Acceptance_testing
 .. _`continuous integration`: http://en.wikipedia.org/wiki/Continuous_integration
-.. _`source code`: https://github.com/deis/deis
-.. _test-integration.sh: https://github.com/deis/deis/blob/master/tests/bin/test-integration.sh
-.. _setup-node.sh: https://github.com/deis/deis/blob/master/tess/bin/setup-node.sh
+.. _`source code`: https://github.com/brendangibat/deis
+.. _test-integration.sh: https://github.com/brendangibat/deis/blob/master/tests/bin/test-integration.sh
+.. _setup-node.sh: https://github.com/brendangibat/deis/blob/master/tess/bin/setup-node.sh
 .. _AWS: http://aws.amazon.com/

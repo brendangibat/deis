@@ -225,5 +225,5 @@ Information on the tools can be found on the `Community Contributions`_ page.
 
 .. _`Ceph`: http://ceph.com
 .. _`download s3cmd`: http://s3tools.org/download
-.. _`Community Contributions`: https://github.com/deis/deis/blob/master/contrib/README.md#backup-tools
+.. _`Community Contributions`: https://github.com/brendangibat/deis/blob/master/contrib/README.md#backup-tools
 .. _`s3cmd`: http://s3tools.org/

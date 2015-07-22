@@ -5,7 +5,7 @@ package tests
 import (
 	"testing"
 
-	"github.com/deis/deis/tests/utils"
+	"github.com/brendangibat/deis/tests/utils"
 )
 
 var (

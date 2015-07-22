@@ -159,7 +159,7 @@ disk. Add the following block to the ``write_files`` section:
           options single-request
 
 
-.. _`contrib/bare-metal`: https://github.com/deis/deis/tree/master/contrib/bare-metal
+.. _`contrib/bare-metal`: https://github.com/brendangibat/deis/tree/master/contrib/bare-metal
 .. _`cluster size`: https://github.com/coreos/etcd/blob/master/Documentation/optimal-cluster-size.md
 .. _`CoreOS`: https://coreos.com/
 .. _`install CoreOS to disk`: https://coreos.com/docs/running-coreos/bare-metal/installing-to-disk/

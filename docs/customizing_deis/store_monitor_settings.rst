@@ -57,4 +57,4 @@ registry:
 Be sure that your custom image functions in the same way as the `stock store-monitor image`_ shipped with
 Deis. Specifically, ensure that it sets and reads appropriate etcd keys.
 
-.. _`stock store-monitor image`: https://github.com/deis/deis/tree/master/store/monitor
+.. _`stock store-monitor image`: https://github.com/brendangibat/deis/tree/master/store/monitor

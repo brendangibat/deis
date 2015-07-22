@@ -123,26 +123,26 @@ Deis believes the Cloud Foundry `Service Broker API`_ is the best embodiment of 
 
 This feature is tracked as GitHub issue `#231`_.
 
-.. _`#231`: https://github.com/deis/deis/issues/231
-.. _`#2106`: https://github.com/deis/deis/issues/2106
-.. _`#3023`: https://github.com/deis/deis/issues/3023
-.. _`#3564`: https://github.com/deis/deis/issues/3564
-.. _`#3635`: https://github.com/deis/deis/issues/3635
-.. _`#3699`: https://github.com/deis/deis/issues/3699
-.. _`#3812`: https://github.com/deis/deis/issues/3812
-.. _`#4000`: https://github.com/deis/deis/issues/4000
-.. _`Automatic CoreOS upgrades`: https://github.com/deis/deis/issues/1043
+.. _`#231`: https://github.com/brendangibat/deis/issues/231
+.. _`#2106`: https://github.com/brendangibat/deis/issues/2106
+.. _`#3023`: https://github.com/brendangibat/deis/issues/3023
+.. _`#3564`: https://github.com/brendangibat/deis/issues/3564
+.. _`#3635`: https://github.com/brendangibat/deis/issues/3635
+.. _`#3699`: https://github.com/brendangibat/deis/issues/3699
+.. _`#3812`: https://github.com/brendangibat/deis/issues/3812
+.. _`#4000`: https://github.com/brendangibat/deis/issues/4000
+.. _`Automatic CoreOS upgrades`: https://github.com/brendangibat/deis/issues/1043
 .. _`CoreUpdate`: https://coreos.com/docs/coreupdate/custom-apps/coreupdate-protocol/
-.. _`Deis Push`: https://github.com/deis/deis/issues/2680
-.. _`Docker Registry v2`: https://github.com/deis/deis/issues/3814
+.. _`Deis Push`: https://github.com/brendangibat/deis/issues/2680
+.. _`Docker Registry v2`: https://github.com/brendangibat/deis/issues/3814
 .. _`Fleet`: https://github.com/coreos/fleet#readme
 .. _`Google Omaha Protocol`: https://code.google.com/p/omaha/wiki/ServerProtocol
-.. _`Interactive Deis Run`: https://github.com/deis/deis/issues/117
-.. _`Internal Service Discovery`: https://github.com/deis/deis/issues/3072
-.. _`Kubernetes preview`: https://github.com/deis/deis/issues/3850
+.. _`Interactive Deis Run`: https://github.com/brendangibat/deis/issues/117
+.. _`Internal Service Discovery`: https://github.com/brendangibat/deis/issues/3072
+.. _`Kubernetes preview`: https://github.com/brendangibat/deis/issues/3850
 .. _`like CoreOS`: https://coreos.com/releases/
-.. _`Log Tailing`: https://github.com/deis/deis/issues/465
-.. _`Mesos preview`: https://github.com/deis/deis/issues/3809
+.. _`Log Tailing`: https://github.com/brendangibat/deis/issues/465
+.. _`Mesos preview`: https://github.com/brendangibat/deis/issues/3809
 .. _`Service Broker API`: http://docs.cloudfoundry.org/services/api.html
-.. _`TTY Broker component`: https://github.com/deis/deis/issues/3808
-.. _`Update client/agent`: https://github.com/deis/deis/issues/3811
+.. _`TTY Broker component`: https://github.com/brendangibat/deis/issues/3808
+.. _`Update client/agent`: https://github.com/brendangibat/deis/issues/3811

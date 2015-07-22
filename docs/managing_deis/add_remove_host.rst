@@ -280,7 +280,7 @@ Removing the host from etcd
 The etcd cluster still has an entry for the host we've removed, so we'll need to remove this entry.
 This can be achieved by making a request to the etcd API. See `remove machines`_ for details.
 
-.. _`custom firewall script`: https://github.com/deis/deis/blob/master/contrib/util/custom-firewall.sh
+.. _`custom firewall script`: https://github.com/brendangibat/deis/blob/master/contrib/util/custom-firewall.sh
 .. _`remove machines`: https://coreos.com/docs/distributed-configuration/etcd-api/#remove-machines
 .. _`removing monitors`: http://ceph.com/docs/hammer/rados/operations/add-or-rm-mons/#removing-monitors
 .. _`removing OSDs`: http://docs.ceph.com/docs/hammer/rados/operations/add-or-rm-osds/#removing-osds-manual

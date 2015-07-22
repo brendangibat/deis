@@ -9,7 +9,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/deis/deis/version"
+	"github.com/brendangibat/deis/version"
 )
 
 const rE string = `{"username":"test","password":"opensesame","email":"test@example.com"}`

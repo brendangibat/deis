@@ -8,10 +8,10 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/deis/deis/pkg/prettyprint"
+	"github.com/brendangibat/deis/pkg/prettyprint"
 
-	"github.com/deis/deis/client-go/controller/api"
-	"github.com/deis/deis/client-go/controller/models/config"
+	"github.com/brendangibat/deis/client-go/controller/api"
+	"github.com/brendangibat/deis/client-go/controller/models/config"
 )
 
 // ConfigList lists an app's config.

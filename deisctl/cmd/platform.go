@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/deis/deis/deisctl/backend"
-	"github.com/deis/deis/deisctl/utils"
+	"github.com/brendangibat/deis/deisctl/backend"
+	"github.com/brendangibat/deis/deisctl/utils"
 )
 
 // InstallPlatform loads all components' definitions from local unit files.

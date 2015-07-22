@@ -4,7 +4,7 @@ this documentation. Download an archive file from the `releases page`_, or use
 
 .. code-block:: console
 
-    $ git clone https://github.com/deis/deis.git
+    $ git clone https://github.com/brendangibat/deis.git
     $ cd deis
     $ git checkout v1.8.0
 
@@ -15,10 +15,10 @@ clone the source code into your `$GOPATH`_:
 
 .. code-block:: console
 
-    $ go get -u -v github.com/deis/deis
-    $ cd $GOPATH/src/github.com/deis/deis
+    $ go get -u -v github.com/brendangibat/deis
+    $ cd $GOPATH/src/github.com/brendangibat/deis
 
 
-.. _`source code`: https://github.com/deis/deis
-.. _`releases page`: https://github.com/deis/deis/releases
+.. _`source code`: https://github.com/brendangibat/deis
+.. _`releases page`: https://github.com/brendangibat/deis/releases
 .. _`$GOPATH`: http://golang.org/doc/code.html#GOPATH

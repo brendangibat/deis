@@ -144,8 +144,8 @@ Any Release
 
 - Update the installer scripts at `deis/deis.io`_ to reference new version A.B.D
 
-  - https://github.com/deis/deis.io/blob/gh-pages/deis-cli/install.sh
-  - https://github.com/deis/deis.io/blob/gh-pages/deisctl/install.sh
+  - https://github.com/brendangibat/deis.io/blob/gh-pages/deis-cli/install.sh
+  - https://github.com/brendangibat/deis.io/blob/gh-pages/deisctl/install.sh
 
 - Update published doc versions at ReadTheDocs
 
@@ -213,10 +213,10 @@ Major or Minor Release
 - Update HipChat channel topic to reference the next planned version
 
 
-.. _`deis milestone`: https://github.com/deis/deis/issues/milestones
-.. _`deis open issues`: https://github.com/deis/deis/issues?state=open
-.. _`changelog script`: https://github.com/deis/deis/blob/master/contrib/util/generate-changelog.sh
-.. _`release notes`: https://github.com/deis/deis/releases
+.. _`deis milestone`: https://github.com/brendangibat/deis/issues/milestones
+.. _`deis open issues`: https://github.com/brendangibat/deis/issues?state=open
+.. _`changelog script`: https://github.com/brendangibat/deis/blob/master/contrib/util/generate-changelog.sh
+.. _`release notes`: https://github.com/brendangibat/deis/releases
 .. _`Deis pypi`:  https://pypi.python.org/pypi/deis/
-.. _`deis/deis.io`: https://github.com/deis/deis.io
+.. _`deis/deis.io`: https://github.com/brendangibat/deis.io
 .. _`test-acceptance`: https://ci.deis.io/job/test-acceptance/configure

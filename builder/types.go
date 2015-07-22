@@ -1,7 +1,7 @@
 package builder
 
 import (
-	"github.com/deis/deis/pkg/time"
+	"github.com/brendangibat/deis/pkg/time"
 )
 
 // ProcessType represents the key/value mappings of a process type to a process inside

@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/coreos/go-etcd/etcd"
-	dtime "github.com/deis/deis/pkg/time"
+	dtime "github.com/brendangibat/deis/pkg/time"
 	"github.com/fsouza/go-dockerclient"
 	"github.com/go-martini/martini"
 	"golang.org/x/net/websocket"

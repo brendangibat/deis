@@ -118,5 +118,5 @@ running that process.
 .. _`Dockerfile`: https://docs.docker.com/reference/builder/
 .. _`Docker Image`: https://docs.docker.com/introduction/understanding-docker/
 .. _`CMD instruction`:  https://docs.docker.com/reference/builder/#cmd
-.. _`issue 1156`: https://github.com/deis/deis/issues/1156
+.. _`issue 1156`: https://github.com/brendangibat/deis/issues/1156
 .. _`Procfile`: https://devcenter.heroku.com/articles/procfile

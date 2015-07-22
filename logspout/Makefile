@@ -1,7 +1,7 @@
 include ../includes.mk
 
 # the filepath to this repository, relative to $GOPATH/src
-repo_path = github.com/deis/deis/logspout
+repo_path = github.com/brendangibat/deis/logspout
 
 GO_FILES = $(wildcard *.go)
 GO_PACKAGES = utils

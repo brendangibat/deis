@@ -88,4 +88,4 @@ Other issues
 
 Running into something not detailed here? Please `open an issue`_ or hop into #deis on Freenode IRC and we'll help!
 
-.. _`open an issue`: https://github.com/deis/deis/issues/new
+.. _`open an issue`: https://github.com/brendangibat/deis/issues/new

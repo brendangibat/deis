@@ -51,4 +51,4 @@ Thanks to `Amy Lindburg`_ and our friends at `Docker`_ for their inspiration.
 
 .. _`Amy Lindburg`: https://twitter.com/amylindburg
 .. _`Docker`: https://www.docker.com/
-.. _`Maintainers`: https://github.com/deis/deis/blob/master/MAINTAINERS.md
+.. _`Maintainers`: https://github.com/brendangibat/deis/blob/master/MAINTAINERS.md

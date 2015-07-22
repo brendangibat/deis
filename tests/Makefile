@@ -1,7 +1,7 @@
 include ../includes.mk
 
 # the filepath to this repository, relative to $GOPATH/src
-repo_path = github.com/deis/deis/tests
+repo_path = github.com/brendangibat/deis/tests
 
 GO_FILES = $(wildcard *.go)
 GO_PACKAGES = dockercli etcdutils mock utils

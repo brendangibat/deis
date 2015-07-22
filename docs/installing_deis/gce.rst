@@ -273,6 +273,6 @@ start installing the platform.
 
 It works! Enjoy your Deis cluster in Google Compute Engine!
 
-.. _`contrib/gce`: https://github.com/deis/deis/tree/master/contrib/gce
+.. _`contrib/gce`: https://github.com/brendangibat/deis/tree/master/contrib/gce
 .. _`Google Cloud SDK`: https://cloud.google.com/compute/docs/gcloud-compute/#install
 .. _`Google Developer Console`: https://console.developers.google.com/project

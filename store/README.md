@@ -10,7 +10,7 @@ This Docker image is based on the official
 [alpine:3.1](https://registry.hub.docker.com/_/alpine/) image.
 
 Please add any issues you find with this software to the
-[Deis project](https://github.com/deis/deis/issues).
+[Deis project](https://github.com/brendangibat/deis/issues).
 
 ## Containers
 
@@ -25,7 +25,7 @@ to use the CephFS shared filesystem (in Ceph, this is a metadata server daemon, 
 * [store-monitor](https://index.docker.io/u/deis/store-monitor/) - the service responsible for
 keeping track of the cluster state (this is also called a monitor in Ceph)
 
-These are all based upon the [store-base](https://github.com/deis/deis/tree/master/store/base) image,
+These are all based upon the [store-base](https://github.com/brendangibat/deis/tree/master/store/base) image,
 which is a Docker container that preinstalls Ceph.
 
 ## Usage

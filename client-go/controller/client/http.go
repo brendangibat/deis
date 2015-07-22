@@ -11,7 +11,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/deis/deis/version"
+	"github.com/brendangibat/deis/version"
 )
 
 // CreateHTTPClient creates a HTTP Client with proper SSL options.

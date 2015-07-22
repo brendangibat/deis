@@ -1,7 +1,7 @@
 include ../includes.mk
 
 # the filepath to this repository, relative to $GOPATH/src
-repo_path = github.com/deis/deis/publisher
+repo_path = github.com/brendangibat/deis/publisher
 
 GO_FILES = $(wildcard *.go)
 GO_PACKAGES = server
@@ -14,7 +14,7 @@ REMOTE_IMAGE := $(REGISTRY)$(RELEASE_IMAGE)
 BINARY_DEST_DIR = image/bin
 
 build: check-docker
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix cgo -ldflags '-s' -o $(BINARY_DEST_DIR)/publisher github.com/deis/deis/publisher || exit 1
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix cgo -ldflags '-s' -o $(BINARY_DEST_DIR)/publisher github.com/brendangibat/deis/publisher || exit 1
 	@$(call check-static-binary,$(BINARY_DEST_DIR)/publisher)
 	docker build -t $(RELEASE_IMAGE) image
 
