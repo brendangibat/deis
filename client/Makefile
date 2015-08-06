@@ -17,7 +17,7 @@ clean:
 	rm -rf build/ dist/ *.egg-info
 
 installer: build
-	@if [ ! -d makeself ]; then git clone -b single-binary https://github.com/deis/makeself.git; fi
+	@if [ ! -d makeself ]; then git clone -b single-binary https://github.com/brendangibat/makeself.git; fi
 	PATH=./makeself:$$PATH BINARY=deis makeself.sh --bzip2 --current --nox11 dist \
 		dist/deis-cli-`grep '__version__\ =\ ' deis.py | cut -d' ' -f3 | tr -d \'`-`go env GOOS`-`go env GOARCH`.run \
 		"Deis CLI" "echo \

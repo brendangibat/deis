@@ -4,6 +4,8 @@ COMPONENT = registry
 IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
 DEV_IMAGE = $(REGISTRY)$(IMAGE)
 
+SHELL_SCRIPTS = $(shell find "." -name '*.sh') $(wildcard bin/*)
+
 build: check-docker
 	docker build -t $(IMAGE) .
 
@@ -46,12 +48,12 @@ deploy: build dev-release restart
 test: test-style test-unit test-functional
 
 test-functional:
-	@docker history deis/mock-store >/dev/null 2>&1 || $(MAKE) -C ../tests/ mock-store
-	@docker history deis/test-etcd >/dev/null 2>&1 || docker pull deis/test-etcd:latest
+	@$(MAKE) -C ../tests/ mock-store
+	@$(MAKE) -C ../tests/ test-etcd
 	GOPATH=`cd ../tests/ && godep path`:$(GOPATH) go test -v ./tests/...
 
 test-style:
-	@echo no style tests
+	shellcheck $(SHELL_SCRIPTS)
 
 test-unit:
 	@echo no unit tests

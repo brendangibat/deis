@@ -90,7 +90,13 @@ Vagrant.configure("2") do |config|
   end
 
   config.trigger.before :up do
-    if !File.exists?(CLOUD_CONFIG_PATH) || File.readlines(CLOUD_CONFIG_PATH).grep(/#\s*discovery:/).any?
+    if File.exists?(CLOUD_CONFIG_PATH) && !File.readlines(CLOUD_CONFIG_PATH).grep(/\s*discovery #DISCOVERY_URL/).any?
+      # Vagrant binds the VMs IP in VirtualBox's bridge network to the eth1 interface instead of eth0.
+      # This necessitates the substitution below, which is not required anywhere except in Vagrant.
+      user_data = File.read(CLOUD_CONFIG_PATH)
+      new_userdata = user_data.gsub("--iface=eth0", "--iface=eth1")
+      File.open(CLOUD_CONFIG_PATH, "w") {|file| file.puts new_userdata }
+    else
       raise Vagrant::Errors::VagrantError.new, "Run 'make discovery-url' first to create user-data."
     end
   end
@@ -145,6 +151,12 @@ Vagrant.configure("2") do |config|
 
       ip = "172.17.8.#{i+99}"
       config.vm.network :private_network, ip: ip
+
+      # Use the same nameserver as the host machine in order to avoid the "too many redirects" problem.
+      config.vm.provider :virtualbox do |vb|
+        vb.customize ["modifyvm", :id, "--natdnshostresolver1", "off"]
+        vb.customize ["modifyvm", :id, "--natdnsproxy1", "off"]
+      end
 
       # Uncomment below to enable NFS for sharing the host machine into the coreos-vagrant VM.
       #config.vm.synced_folder ".", "/home/core/share", id: "core", :nfs => true, :mount_options => ['nolock,vers=3,udp']

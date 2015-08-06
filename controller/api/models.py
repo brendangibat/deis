@@ -31,7 +31,7 @@ from OpenSSL import crypto
 import requests
 from rest_framework.authtoken.models import Token
 
-from api import fields, utils
+from api import fields, utils, exceptions
 from registry import publish_release
 from utils import dict_diff, fingerprint
 
@@ -118,6 +118,20 @@ def validate_certificate(value):
         raise ValidationError('Could not load certificate: {}'.format(e))
 
 
+def get_etcd_client():
+    if not hasattr(get_etcd_client, "client"):
+        # wire up etcd publishing if we can connect
+        try:
+            get_etcd_client.client = etcd.Client(
+                host=settings.ETCD_HOST,
+                port=int(settings.ETCD_PORT))
+            get_etcd_client.client.get('/deis')
+        except etcd.EtcdException:
+            logger.log(logging.WARNING, 'Cannot synchronize with etcd cluster')
+            get_etcd_client.client = None
+    return get_etcd_client.client
+
+
 class AuditedModel(models.Model):
     """Add created and updated fields to a model."""
 
@@ -178,6 +192,28 @@ class App(UuidAuditedModel):
     @property
     def url(self):
         return self.id + '.' + settings.DEIS_DOMAIN
+
+    def _get_job_id(self, container_type):
+        app = self.id
+        release = self.release_set.latest()
+        version = "v{}".format(release.version)
+        job_id = "{app}_{version}.{container_type}".format(**locals())
+        return job_id
+
+    def _get_command(self, container_type):
+        try:
+            # if this is not procfile-based app, ensure they cannot break out
+            # and run arbitrary commands on the host
+            # FIXME: remove slugrunner's hardcoded entrypoint
+            release = self.release_set.latest()
+            if release.build.dockerfile or not release.build.sha:
+                return "bash -c '{}'".format(release.build.procfile[container_type])
+            else:
+                return 'start {}'.format(container_type)
+        # if the key is not present or if a parent attribute is None
+        except (KeyError, TypeError, AttributeError):
+            # handle special case for Dockerfile deployments
+            return '' if container_type == 'cmd' else 'start {}'.format(container_type)
 
     def log(self, message):
         """Logs a message to the application's log file.
@@ -242,6 +278,8 @@ class App(UuidAuditedModel):
         # iterate and scale by container type (web, worker, etc)
         changed = False
         to_add, to_remove = [], []
+        scale_types = {}
+
         # iterate on a copy of the container_type keys
         for container_type in requested_structure.keys():
             containers = list(self.container_set.filter(type=container_type).order_by('created'))
@@ -253,6 +291,7 @@ class App(UuidAuditedModel):
             if diff == 0:
                 continue
             changed = True
+            scale_types[container_type] = requested
             while diff < 0:
                 c = containers.pop()
                 to_remove.append(c)
@@ -267,11 +306,15 @@ class App(UuidAuditedModel):
                 to_add.append(c)
                 container_num += 1
                 diff -= 1
+
         if changed:
-            if to_add:
-                self._start_containers(to_add)
-            if to_remove:
-                self._destroy_containers(to_remove)
+            if "scale" in dir(self._scheduler):
+                self._scale_containers(scale_types, to_remove)
+            else:
+                if to_add:
+                    self._start_containers(to_add)
+                if to_remove:
+                    self._destroy_containers(to_remove)
         # save new structure to the database
         vals = self.container_set.exclude(type='run').values(
             'type').annotate(Count('pk')).order_by()
@@ -280,6 +323,31 @@ class App(UuidAuditedModel):
         self.structure = new_structure
         self.save()
         return changed
+
+    def _scale_containers(self, scale_types, to_remove):
+        release = self.release_set.latest()
+        for scale_type in scale_types:
+            image = release.image
+            version = "v{}".format(release.version)
+            kwargs = {'memory': release.config.memory,
+                      'cpu': release.config.cpu,
+                      'tags': release.config.tags,
+                      'version': version,
+                      'aname': self.id,
+                      'num': scale_types[scale_type]}
+            job_id = self._get_job_id(scale_type)
+            command = self._get_command(scale_type)
+            try:
+                self._scheduler.scale(
+                    name=job_id,
+                    image=image,
+                    command=command,
+                    **kwargs)
+            except Exception as e:
+                err = '{} (scale): {}'.format(job_id, e)
+                log_event(self, err, logging.ERROR)
+                raise
+        [c.delete() for c in to_remove]
 
     def _start_containers(self, to_add):
         """Creates and starts containers via the scheduler"""
@@ -299,6 +367,58 @@ class App(UuidAuditedModel):
         if set([c.state for c in to_add]) != set(['up']):
             err = 'warning, some containers failed to start'
             log_event(self, err, logging.WARNING)
+        # if the user specified a health check, try checking to see if it's running
+        try:
+            config = self.config_set.latest()
+            if 'HEALTHCHECK_URL' in config.values.keys():
+                self._healthcheck(to_add, config.values)
+        except Config.DoesNotExist:
+            pass
+
+    def _healthcheck(self, containers, config):
+        # if at first it fails, back off and try again at 10%, 50% and 100% of INITIAL_DELAY
+        intervals = [1.0, 0.1, 0.5, 1.0]
+        # HACK (bacongobbler): we need to wait until publisher has a chance to publish each
+        # service to etcd, which can take up to 20 seconds.
+        time.sleep(20)
+        for i in range(0, 4):
+            delay = int(config.get('HEALTHCHECK_INITIAL_DELAY', 0))
+            try:
+                # sleep until the initial timeout is over
+                if delay > 0:
+                    time.sleep(delay * intervals[i])
+                self._do_healthcheck(containers, config)
+                break
+            except exceptions.HealthcheckException as e:
+                try:
+                    new_delay = delay * intervals[i+1]
+                    msg = "{}; trying again in {} seconds".format(e, new_delay)
+                    log_event(self, msg, logging.WARNING)
+                except IndexError:
+                    log_event(self, e, logging.WARNING)
+        else:
+            self._destroy_containers(containers)
+            msg = "aborting, app containers failed to respond to health check"
+            log_event(self, msg, logging.ERROR)
+            raise RuntimeError(msg)
+
+    def _do_healthcheck(self, containers, config):
+        path = config.get('HEALTHCHECK_URL', '/')
+        timeout = int(config.get('HEALTHCHECK_TIMEOUT', 1))
+        if not _etcd_client:
+            raise exceptions.HealthcheckException('no etcd client available')
+        for container in containers:
+            try:
+                key = "/deis/services/{self}/{container.job_id}".format(**locals())
+                url = "http://{}{}".format(_etcd_client.get(key).value, path)
+                response = requests.get(url, timeout=timeout)
+                if response.status_code != requests.codes.OK:
+                    raise exceptions.HealthcheckException(
+                        "app failed health check (got '{}', expected: '200')".format(
+                            response.status_code))
+            except (requests.Timeout, requests.ConnectionError, KeyError) as e:
+                raise exceptions.HealthcheckException(
+                    'failed to connect to container ({})'.format(e))
 
     def _restart_containers(self, to_restart):
         """Restarts containers via the scheduler"""
@@ -334,20 +454,49 @@ class App(UuidAuditedModel):
         """Deploy a new release to this application"""
         existing = self.container_set.exclude(type='run')
         new = []
+        scale_types = set()
         for e in existing:
             n = e.clone(release)
             n.save()
             new.append(n)
+            scale_types.add(e.type)
 
-        self._start_containers(new)
+        if new and "deploy" in dir(self._scheduler):
+            self._deploy_app(scale_types, release, existing)
+        else:
+            self._start_containers(new)
 
-        # destroy old containers
-        if existing:
-            self._destroy_containers(existing)
+            # destroy old containers
+            if existing:
+                self._destroy_containers(existing)
 
         # perform default scaling if necessary
         if self.structure == {} and release.build is not None:
             self._default_scale(user, release)
+
+    def _deploy_app(self, scale_types, release, existing):
+        for scale_type in scale_types:
+            image = release.image
+            version = "v{}".format(release.version)
+            kwargs = {'memory': release.config.memory,
+                      'cpu': release.config.cpu,
+                      'tags': release.config.tags,
+                      'aname': self.id,
+                      'num': 0,
+                      'version': version}
+            job_id = self._get_job_id(scale_type)
+            command = self._get_command(scale_type)
+            try:
+                self._scheduler.deploy(
+                    name=job_id,
+                    image=image,
+                    command=command,
+                    **kwargs)
+            except Exception as e:
+                err = '{} (deploy): {}'.format(job_id, e)
+                log_event(self, err, logging.ERROR)
+                raise
+        [c.delete() for c in existing]
 
     def _default_scale(self, user, release):
         """Scale to default structure based on release type"""
@@ -369,7 +518,7 @@ class App(UuidAuditedModel):
 
         self.scale(user, structure)
 
-    def logs(self, log_lines):
+    def logs(self, log_lines=str(settings.LOG_LINES)):
         """Return aggregated log data for this application."""
         path = os.path.join(settings.DEIS_LOG_DIR, self.id + '.log')
         if not os.path.exists(path):
@@ -430,7 +579,7 @@ class Container(UuidAuditedModel):
 
     @property
     def state(self):
-        return self._scheduler.state(self._job_id).name
+        return self._scheduler.state(self.job_id).name
 
     def short_name(self):
         return "{}.{}.{}".format(self.app.id, self.type, self.num)
@@ -443,15 +592,10 @@ class Container(UuidAuditedModel):
         get_latest_by = '-created'
         ordering = ['created']
 
-    def _get_job_id(self):
-        app = self.app.id
-        release = self.release
-        version = "v{}".format(release.version)
-        num = self.num
-        job_id = "{app}_{version}.{self.type}.{num}".format(**locals())
-        return job_id
-
-    _job_id = property(_get_job_id)
+    @property
+    def job_id(self):
+        version = "v{}".format(self.release.version)
+        return "{self.app.id}_{version}.{self.type}.{self.num}".format(**locals())
 
     def _get_command(self):
         try:
@@ -483,45 +627,41 @@ class Container(UuidAuditedModel):
         kwargs = {'memory': self.release.config.memory,
                   'cpu': self.release.config.cpu,
                   'tags': self.release.config.tags}
-        job_id = self._job_id
         try:
             self._scheduler.create(
-                name=job_id,
+                name=self.job_id,
                 image=image,
                 command=self._command,
                 **kwargs)
         except Exception as e:
-            err = '{} (create): {}'.format(job_id, e)
+            err = '{} (create): {}'.format(self.job_id, e)
             log_event(self.app, err, logging.ERROR)
             raise
 
     @close_db_connections
     def start(self):
-        job_id = self._job_id
         try:
-            self._scheduler.start(job_id)
+            self._scheduler.start(self.job_id)
         except Exception as e:
-            err = '{} (start): {}'.format(job_id, e)
+            err = '{} (start): {}'.format(self.job_id, e)
             log_event(self.app, err, logging.WARNING)
             raise
 
     @close_db_connections
     def stop(self):
-        job_id = self._job_id
         try:
-            self._scheduler.stop(job_id)
+            self._scheduler.stop(self.job_id)
         except Exception as e:
-            err = '{} (stop): {}'.format(job_id, e)
+            err = '{} (stop): {}'.format(self.job_id, e)
             log_event(self.app, err, logging.ERROR)
             raise
 
     @close_db_connections
     def destroy(self):
-        job_id = self._job_id
         try:
-            self._scheduler.destroy(job_id)
+            self._scheduler.destroy(self.job_id)
         except Exception as e:
-            err = '{} (destroy): {}'.format(job_id, e)
+            err = '{} (destroy): {}'.format(self.job_id, e)
             log_event(self.app, err, logging.ERROR)
             raise
 
@@ -531,7 +671,6 @@ class Container(UuidAuditedModel):
             raise EnvironmentError('No build associated with this release '
                                    'to run this command')
         image = self.release.image
-        job_id = self._job_id
         entrypoint = '/bin/bash'
         # if this is a procfile-based app, switch the entrypoint to slugrunner's default
         # FIXME: remove slugrunner's hardcoded entrypoint
@@ -543,10 +682,10 @@ class Container(UuidAuditedModel):
         else:
             command = "-c '{}'".format(command)
         try:
-            rc, output = self._scheduler.run(job_id, image, entrypoint, command)
+            rc, output = self._scheduler.run(self.job_id, image, entrypoint, command)
             return rc, output
         except Exception as e:
-            err = '{} (run): {}'.format(job_id, e)
+            err = '{} (run): {}'.format(self.job_id, e)
             log_event(self.app, err, logging.ERROR)
             raise
 
@@ -1020,6 +1159,34 @@ def _etcd_purge_cert(**kwargs):
         pass
 
 
+def _etcd_publish_config(**kwargs):
+    config = kwargs['instance']
+    # we purge all existing config when adding the newest instance. This is because
+    # deis config:unset would remove an existing value, but not delete the
+    # old config object
+    try:
+        _etcd_client.delete('/deis/config/{}'.format(config.app),
+                            prevExist=True, dir=True, recursive=True)
+    except KeyError:
+        pass
+    if kwargs['created']:
+        for k, v in config.values.iteritems():
+            _etcd_client.write(
+                '/deis/config/{}/{}'.format(
+                    config.app,
+                    unicode(k).encode('utf-8').lower()),
+                unicode(v).encode('utf-8'))
+
+
+def _etcd_purge_config(**kwargs):
+    config = kwargs['instance']
+    try:
+        _etcd_client.delete('/deis/config/{}'.format(config.app),
+                            prevExist=True, dir=True, recursive=True)
+    except KeyError:
+        pass
+
+
 def _etcd_publish_domains(**kwargs):
     domain = kwargs['instance']
     if kwargs['created']:
@@ -1051,13 +1218,9 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
 
-# wire up etcd publishing if we can connect
-try:
-    _etcd_client = etcd.Client(host=settings.ETCD_HOST, port=int(settings.ETCD_PORT))
-    _etcd_client.get('/deis')
-except etcd.EtcdException:
-    logger.log(logging.WARNING, 'Cannot synchronize with etcd cluster')
-    _etcd_client = None
+
+_etcd_client = get_etcd_client()
+
 
 if _etcd_client:
     post_save.connect(_etcd_publish_key, sender=Key, dispatch_uid='api.models')
@@ -1069,3 +1232,5 @@ if _etcd_client:
     post_delete.connect(_etcd_purge_app, sender=App, dispatch_uid='api.models')
     post_save.connect(_etcd_publish_cert, sender=Certificate, dispatch_uid='api.models')
     post_delete.connect(_etcd_purge_cert, sender=Certificate, dispatch_uid='api.models')
+    post_save.connect(_etcd_publish_config, sender=Config, dispatch_uid='api.models')
+    post_delete.connect(_etcd_purge_config, sender=Config, dispatch_uid='api.models')

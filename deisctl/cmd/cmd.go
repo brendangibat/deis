@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -11,7 +13,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/brendangibat/deis/deisctl/backend"
 	"github.com/brendangibat/deis/deisctl/config"
@@ -25,6 +26,10 @@ const (
 	// StatelessPlatformCommand is shorthand for the components except store-*, database, and logger.
 	StatelessPlatformCommand string = "stateless-platform"
 	swarm                    string = "swarm"
+	mesos                    string = "mesos"
+	// DefaultRouterMeshSize defines the default number of routers to be loaded when installing the platform.
+	DefaultRouterMeshSize uint8  = 3
+	k8s                   string = "k8s"
 )
 
 // ListUnits prints a list of installed units.
@@ -37,14 +42,19 @@ func ListUnitFiles(b backend.Backend) error {
 	return b.ListUnitFiles()
 }
 
+// Location to write standard output. By default, this is the os.Stdout.
+var Stdout io.Writer = os.Stderr
+
+// Location to write standard error information. By default, this is the os.Stderr.
+var Stderr io.Writer = os.Stdout
+
+// Number of routers to be installed. By default, it's DefaultRouterMeshSize.
+var RouterMeshSize = DefaultRouterMeshSize
+
 // Scale grows or shrinks the number of running components.
 // Currently "router", "registry" and "store-gateway" are the only types that can be scaled.
 func Scale(targets []string, b backend.Backend) error {
-	outchan := make(chan string)
-	errchan := make(chan error)
 	var wg sync.WaitGroup
-
-	go printState(outchan, errchan, 500*time.Millisecond)
 
 	for _, target := range targets {
 		component, num, err := splitScaleTarget(target)
@@ -55,11 +65,9 @@ func Scale(targets []string, b backend.Backend) error {
 		if !strings.Contains(component, "router") && !strings.Contains(component, "registry") && !strings.Contains(component, "store-gateway") {
 			return fmt.Errorf("cannot scale %s component", component)
 		}
-		b.Scale(component, num, &wg, outchan, errchan)
+		b.Scale(component, num, &wg, Stdout, Stderr)
 		wg.Wait()
 	}
-	close(outchan)
-	close(errchan)
 	return nil
 }
 
@@ -68,36 +76,45 @@ func Start(targets []string, b backend.Backend) error {
 
 	// if target is platform, install all services
 	if len(targets) == 1 {
-		if targets[0] == PlatformCommand {
+		switch targets[0] {
+		case PlatformCommand:
 			return StartPlatform(b, false)
-		} else if targets[0] == StatelessPlatformCommand {
+		case StatelessPlatformCommand:
 			return StartPlatform(b, true)
-		} else if targets[0] == swarm {
+		case mesos:
+			return StartMesos(b)
+		case swarm:
 			return StartSwarm(b)
+		case k8s:
+			return StartK8s(b)
 		}
 	}
-	outchan := make(chan string)
-	errchan := make(chan error)
 	var wg sync.WaitGroup
 
-	go printState(outchan, errchan, 500*time.Millisecond)
-
-	b.Start(targets, &wg, outchan, errchan)
+	b.Start(targets, &wg, Stdout, Stderr)
 	wg.Wait()
-	close(outchan)
-	close(errchan)
 
 	return nil
 }
 
-// CheckRequiredKeys exist in etcd
-func CheckRequiredKeys() error {
-	if err := config.CheckConfig("/deis/platform/", "domain"); err != nil {
+// RollingRestart restart instance unit in a rolling manner
+func RollingRestart(target string, b backend.Backend) error {
+	var wg sync.WaitGroup
+
+	b.RollingRestart(target, &wg, Stdout, Stderr)
+	wg.Wait()
+
+	return nil
+}
+
+// CheckRequiredKeys exist in config backend
+func CheckRequiredKeys(cb config.Backend) error {
+	if err := config.CheckConfig("/deis/platform/", "domain", cb); err != nil {
 		return fmt.Errorf(`Missing platform domain, use:
 deisctl config platform set domain=<your-domain>`)
 	}
 
-	if err := config.CheckConfig("/deis/platform/", "sshPrivateKey"); err != nil {
+	if err := config.CheckConfig("/deis/platform/", "sshPrivateKey", cb); err != nil {
 		fmt.Printf(`Warning: Missing sshPrivateKey, "deis run" will be unavailable. Use:
 deisctl config platform set sshPrivateKey=<path-to-key>
 `)
@@ -105,67 +122,65 @@ deisctl config platform set sshPrivateKey=<path-to-key>
 	return nil
 }
 
-func startDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+func startDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGroup, out, err io.Writer) {
 
-	// create separate channels for background tasks
-	_outchan := make(chan string)
-	_errchan := make(chan error)
-	var _wg sync.WaitGroup
-
-	// wait for groups to come up
+	// Wait for groups to come up.
+	// If we're running in stateless mode, we start only a subset of services.
 	if !stateless {
-		outchan <- fmt.Sprintf("Storage subsystem...")
-		b.Start([]string{"store-monitor"}, wg, outchan, errchan)
+		fmt.Fprintln(out, "Storage subsystem...")
+		b.Start([]string{"store-monitor"}, wg, out, err)
 		wg.Wait()
-		b.Start([]string{"store-daemon"}, wg, outchan, errchan)
+		b.Start([]string{"store-daemon"}, wg, out, err)
 		wg.Wait()
-		b.Start([]string{"store-metadata"}, wg, outchan, errchan)
+		b.Start([]string{"store-metadata"}, wg, out, err)
 		wg.Wait()
 
 		// we start gateway first to give metadata time to come up for volume
-		b.Start([]string{"store-gateway@*"}, wg, outchan, errchan)
+		b.Start([]string{"store-gateway@*"}, wg, out, err)
 		wg.Wait()
-		b.Start([]string{"store-volume"}, wg, outchan, errchan)
+		b.Start([]string{"store-volume"}, wg, out, err)
 		wg.Wait()
 	}
 
 	// start logging subsystem first to collect logs from other components
-	outchan <- fmt.Sprintf("Logging subsystem...")
+	fmt.Fprintln(out, "Logging subsystem...")
 	if !stateless {
-		b.Start([]string{"logger"}, wg, outchan, errchan)
+		b.Start([]string{"logger"}, wg, out, err)
 		wg.Wait()
 	}
-	b.Start([]string{"logspout"}, wg, outchan, errchan)
+	b.Start([]string{"logspout"}, wg, out, err)
 	wg.Wait()
 
-	if stateless {
-		b.Start([]string{
-			"registry@*", "controller", "builder",
-			"publisher", "router@*"},
-			&_wg, _outchan, _errchan)
-	} else {
-		b.Start([]string{
-			"database", "registry@*", "controller", "builder",
-			"publisher", "router@*"},
-			&_wg, _outchan, _errchan)
+	// Start these in parallel. This section can probably be removed now.
+	var bgwg sync.WaitGroup
+	var trash bytes.Buffer
+	batch := []string{
+		"database", "registry@*", "controller", "builder",
+		"publisher", "router@*",
 	}
-
-	outchan <- fmt.Sprintf("Control plane...")
 	if stateless {
-		b.Start([]string{"registry@*", "controller"}, wg, outchan, errchan)
-	} else {
-		b.Start([]string{"database", "registry@*", "controller"}, wg, outchan, errchan)
+		batch = []string{"registry@*", "controller", "builder", "publisher", "router@*"}
 	}
-	wg.Wait()
-	b.Start([]string{"builder"}, wg, outchan, errchan)
+	b.Start(batch, &bgwg, &trash, &trash)
+	// End background stuff.
+
+	fmt.Fprintln(Stdout, "Control plane...")
+	batch = []string{"database", "registry@*", "controller"}
+	if stateless {
+		batch = []string{"registry@*", "controller"}
+	}
+	b.Start(batch, wg, out, err)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Data plane...")
-	b.Start([]string{"publisher"}, wg, outchan, errchan)
+	b.Start([]string{"builder"}, wg, out, err)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Routing mesh...")
-	b.Start([]string{"router@*"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Data plane...")
+	b.Start([]string{"publisher"}, wg, out, err)
+	wg.Wait()
+
+	fmt.Fprintln(out, "Routing mesh...")
+	b.Start([]string{"router@*"}, wg, out, err)
 	wg.Wait()
 }
 
@@ -174,64 +189,63 @@ func Stop(targets []string, b backend.Backend) error {
 
 	// if target is platform, stop all services
 	if len(targets) == 1 {
-		if targets[0] == PlatformCommand {
+		switch targets[0] {
+		case PlatformCommand:
 			return StopPlatform(b, false)
-		} else if targets[0] == StatelessPlatformCommand {
+		case StatelessPlatformCommand:
 			return StopPlatform(b, true)
-		} else if targets[0] == swarm {
+		case mesos:
+			return StopMesos(b)
+		case swarm:
 			return StopSwarm(b)
+		case k8s:
+			return StopK8s(b)
 		}
 	}
 
-	outchan := make(chan string)
-	errchan := make(chan error)
 	var wg sync.WaitGroup
 
-	go printState(outchan, errchan, 500*time.Millisecond)
-
-	b.Stop(targets, &wg, outchan, errchan)
+	b.Stop(targets, &wg, Stdout, Stderr)
 	wg.Wait()
-	close(outchan)
-	close(errchan)
 
 	return nil
 }
 
-func stopDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+func stopDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGroup, out, err io.Writer) {
 
-	outchan <- fmt.Sprintf("Routing mesh...")
-	b.Stop([]string{"router@*"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Routing mesh...")
+	b.Stop([]string{"router@*"}, wg, out, err)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Data plane...")
-	b.Stop([]string{"publisher"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Data plane...")
+	b.Stop([]string{"publisher"}, wg, out, err)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Control plane...")
+	fmt.Fprintln(out, "Control plane...")
 	if stateless {
-		b.Stop([]string{"controller", "builder", "registry@*"}, wg, outchan, errchan)
+		b.Stop([]string{"controller", "builder", "registry@*"}, wg, out, err)
 	} else {
-		b.Stop([]string{"controller", "builder", "database", "registry@*"}, wg, outchan, errchan)
+		b.Stop([]string{"controller", "builder", "database", "registry@*"}, wg, out, err)
 	}
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Logging subsystem...")
+	fmt.Fprintln(out, "Logging subsystem...")
 	if stateless {
-		b.Stop([]string{"logspout"}, wg, outchan, errchan)
+		b.Stop([]string{"logspout"}, wg, out, err)
 	} else {
-		b.Stop([]string{"logger", "logspout"}, wg, outchan, errchan)
+		b.Stop([]string{"logger", "logspout"}, wg, out, err)
 	}
 	wg.Wait()
 
 	if !stateless {
-		outchan <- fmt.Sprintf("Storage subsystem...")
-		b.Stop([]string{"store-volume", "store-gateway@*"}, wg, outchan, errchan)
+		fmt.Fprintln(out, "Storage subsystem...")
+		b.Stop([]string{"store-volume", "store-gateway@*"}, wg, out, err)
 		wg.Wait()
-		b.Stop([]string{"store-metadata"}, wg, outchan, errchan)
+		b.Stop([]string{"store-metadata"}, wg, out, err)
 		wg.Wait()
-		b.Stop([]string{"store-daemon"}, wg, outchan, errchan)
+		b.Stop([]string{"store-daemon"}, wg, out, err)
 		wg.Wait()
-		b.Stop([]string{"store-monitor"}, wg, outchan, errchan)
+		b.Stop([]string{"store-monitor"}, wg, out, err)
 		wg.Wait()
 	}
 
@@ -272,159 +286,140 @@ func Journal(targets []string, b backend.Backend) error {
 
 // Install loads the definitions of components from local unit files.
 // After Install, the components will be available to Start.
-func Install(targets []string, b backend.Backend, checkKeys func() error) error {
+func Install(targets []string, b backend.Backend, cb config.Backend, checkKeys func(config.Backend) error) error {
 
 	// if target is platform, install all services
 	if len(targets) == 1 {
-		if targets[0] == PlatformCommand {
-			return InstallPlatform(b, checkKeys, false)
-		} else if targets[0] == StatelessPlatformCommand {
-			return InstallPlatform(b, checkKeys, true)
-		} else if targets[0] == swarm {
+		switch targets[0] {
+		case PlatformCommand:
+			return InstallPlatform(b, cb, checkKeys, false)
+		case StatelessPlatformCommand:
+			return InstallPlatform(b, cb, checkKeys, true)
+		case mesos:
+			return InstallMesos(b)
+		case swarm:
 			return InstallSwarm(b)
+		case k8s:
+			return InstallK8s(b)
 		}
 	}
-	outchan := make(chan string)
-	errchan := make(chan error)
 	var wg sync.WaitGroup
 
-	go printState(outchan, errchan, 500*time.Millisecond)
-
 	// otherwise create the specific targets
-	b.Create(targets, &wg, outchan, errchan)
+	b.Create(targets, &wg, Stdout, Stderr)
 	wg.Wait()
 
-	close(outchan)
-	close(errchan)
 	return nil
 }
 
-func installDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+func installDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGroup, out, err io.Writer) {
 
 	if !stateless {
-		outchan <- fmt.Sprintf("Storage subsystem...")
-		b.Create([]string{"store-daemon", "store-monitor", "store-metadata", "store-volume", "store-gateway@1"}, wg, outchan, errchan)
+		fmt.Fprintln(out, "Storage subsystem...")
+		b.Create([]string{"store-daemon", "store-monitor", "store-metadata", "store-volume", "store-gateway@1"}, wg, out, err)
 		wg.Wait()
 	}
 
-	outchan <- fmt.Sprintf("Logging subsystem...")
+	fmt.Fprintln(out, "Logging subsystem...")
 	if stateless {
-		b.Create([]string{"logspout"}, wg, outchan, errchan)
+		b.Create([]string{"logspout"}, wg, out, err)
 	} else {
-		b.Create([]string{"logger", "logspout"}, wg, outchan, errchan)
+		b.Create([]string{"logger", "logspout"}, wg, out, err)
 	}
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Control plane...")
+	fmt.Fprintln(out, "Control plane...")
 	if stateless {
-		b.Create([]string{"registry@1", "controller", "builder"}, wg, outchan, errchan)
+		b.Create([]string{"registry@1", "controller", "builder"}, wg, out, err)
 	} else {
-		b.Create([]string{"database", "registry@1", "controller", "builder"}, wg, outchan, errchan)
+		b.Create([]string{"database", "registry@1", "controller", "builder"}, wg, out, err)
 	}
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Data plane...")
-	b.Create([]string{"publisher"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Data plane...")
+	b.Create([]string{"publisher"}, wg, out, err)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Routing mesh...")
-	b.Create([]string{"router@1", "router@2", "router@3"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Routing mesh...")
+	b.Create(getRouters(), wg, out, err)
 	wg.Wait()
 
+}
+
+func getRouters() []string {
+	routers := make([]string, RouterMeshSize)
+	for i := uint8(0); i < RouterMeshSize; i++ {
+		routers[i] = fmt.Sprintf("router@%d", i+1)
+	}
+	return routers
 }
 
 // Uninstall unloads the definitions of the specified components.
 // After Uninstall, the components will be unavailable until Install is called.
 func Uninstall(targets []string, b backend.Backend) error {
 	if len(targets) == 1 {
-		if targets[0] == PlatformCommand {
+		switch targets[0] {
+		case PlatformCommand:
 			return UninstallPlatform(b, false)
-		} else if targets[0] == StatelessPlatformCommand {
+		case StatelessPlatformCommand:
 			return UninstallPlatform(b, true)
-		} else if targets[0] == swarm {
+		case mesos:
+			return UninstallMesos(b)
+		case swarm:
 			return UnInstallSwarm(b)
+		case k8s:
+			return UnInstallK8s(b)
 		}
 	}
 
-	outchan := make(chan string)
-	errchan := make(chan error)
 	var wg sync.WaitGroup
 
-	go printState(outchan, errchan, 500*time.Millisecond)
-
 	// uninstall the specific target
-	b.Destroy(targets, &wg, outchan, errchan)
+	b.Destroy(targets, &wg, Stdout, Stderr)
 	wg.Wait()
-	close(outchan)
-	close(errchan)
 
 	return nil
 }
 
-func uninstallAllServices(b backend.Backend, stateless bool, wg *sync.WaitGroup, outchan chan string, errchan chan error) error {
+func uninstallAllServices(b backend.Backend, stateless bool, wg *sync.WaitGroup, out, err io.Writer) error {
 
-	outchan <- fmt.Sprintf("Routing mesh...")
-	b.Destroy([]string{"router@*"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Routing mesh...")
+	b.Destroy([]string{"router@*"}, wg, out, err)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Data plane...")
-	b.Destroy([]string{"publisher"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Data plane...")
+	b.Destroy([]string{"publisher"}, wg, out, err)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Control plane...")
+	fmt.Fprintln(out, "Control plane...")
 	if stateless {
-		b.Destroy([]string{"controller", "builder", "registry@*"}, wg, outchan, errchan)
+		b.Destroy([]string{"controller", "builder", "registry@*"}, wg, out, err)
 	} else {
-		b.Destroy([]string{"controller", "builder", "database", "registry@*"}, wg, outchan, errchan)
+		b.Destroy([]string{"controller", "builder", "database", "registry@*"}, wg, out, err)
 	}
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Logging subsystem...")
+	fmt.Fprintln(out, "Logging subsystem...")
 	if stateless {
-		b.Destroy([]string{"logspout"}, wg, outchan, errchan)
+		b.Destroy([]string{"logspout"}, wg, out, err)
 	} else {
-		b.Destroy([]string{"logger", "logspout"}, wg, outchan, errchan)
+		b.Destroy([]string{"logger", "logspout"}, wg, out, err)
 	}
 	wg.Wait()
 
 	if !stateless {
-		outchan <- fmt.Sprintf("Storage subsystem...")
-		b.Destroy([]string{"store-volume", "store-gateway@*"}, wg, outchan, errchan)
+		fmt.Fprintln(out, "Storage subsystem...")
+		b.Destroy([]string{"store-volume", "store-gateway@*"}, wg, out, err)
 		wg.Wait()
-		b.Destroy([]string{"store-metadata"}, wg, outchan, errchan)
+		b.Destroy([]string{"store-metadata"}, wg, out, err)
 		wg.Wait()
-		b.Destroy([]string{"store-daemon"}, wg, outchan, errchan)
+		b.Destroy([]string{"store-daemon"}, wg, out, err)
 		wg.Wait()
-		b.Destroy([]string{"store-monitor"}, wg, outchan, errchan)
+		b.Destroy([]string{"store-monitor"}, wg, out, err)
 		wg.Wait()
 	}
 
 	return nil
-}
-
-func printState(outchan chan string, errchan chan error, interval time.Duration) {
-	for {
-		select {
-		case out, ok := <-outchan:
-			if !ok {
-				outchan = nil
-			}
-			if out != "" {
-				fmt.Println(out)
-			}
-		case err, ok := <-errchan:
-			if !ok {
-				errchan = nil
-			}
-			if err != nil {
-				fmt.Println(err.Error())
-			}
-		}
-		if outchan == nil && errchan == nil {
-			break
-		}
-		time.Sleep(interval)
-	}
 }
 
 func splitScaleTarget(target string) (c string, num int, err error) {
@@ -444,11 +439,11 @@ func splitScaleTarget(target string) (c string, num int, err error) {
 
 // Config gets or sets a configuration value from the cluster.
 //
-// A configuration value is stored and retrieved from a key/value store (in this case, etcd)
+// A configuration value is stored and retrieved from a key/value store
 // at /deis/<component>/<config>. Configuration values are typically used for component-level
 // configuration, such as enabling TLS for the routers.
-func Config(target string, action string, key []string) error {
-	if err := config.Config(target, action, key); err != nil {
+func Config(target string, action string, key []string, cb config.Backend) error {
+	if err := config.Config(target, action, key, cb); err != nil {
 		return err
 	}
 	return nil
@@ -488,10 +483,24 @@ func RefreshUnits(dir, tag, url string) error {
 }
 
 // SSH opens an interactive shell on a machine in the cluster
-func SSH(target string, b backend.Backend) error {
-	if err := b.SSH(target); err != nil {
-		return err
+func SSH(target string, cmd []string, b backend.Backend) error {
+
+	if len(cmd) > 0 {
+		return b.SSHExec(target, strings.Join(cmd, " "))
 	}
 
-	return nil
+	return b.SSH(target)
+}
+
+// Dock connects to the appropriate host and runs 'docker exec -it'.
+func Dock(target string, cmd []string, b backend.Backend) error {
+
+	c := "sh"
+	if len(cmd) > 0 {
+		c = strings.Join(cmd, " ")
+	}
+
+	execit := fmt.Sprintf("docker exec -it %s %s", target, c)
+
+	return b.SSHExec(target, execit)
 }

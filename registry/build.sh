@@ -31,7 +31,7 @@ pip install --disable-pip-version-check --no-cache-dir pyopenssl ndg-httpsclient
 adduser -D -s /bin/bash registry
 
 # add the docker registry source from github
-git clone -b new-repository-import-master --single-branch https://github.com/deis/docker-registry /docker-registry && \
+git clone -b new-repository-import-master --single-branch https://github.com/brendangibat/docker-registry /docker-registry && \
   chown -R registry:registry /docker-registry
 
 # install boto configuration
@@ -42,10 +42,10 @@ cd /docker-registry && pip install --disable-pip-version-check --no-cache-dir -r
 pip install --disable-pip-version-check --no-cache-dir /docker-registry/depends/docker-registry-core
 
 # Install registry
-pip install --disable-pip-version-check --no-cache-dir file:///docker-registry#egg=docker-registry[bugsnag,newrelic,cors]
+pip install --disable-pip-version-check --no-cache-dir "file:///docker-registry#egg=docker-registry[bugsnag,newrelic,cors]"
 
 patch \
-  $(python -c 'import boto; import os; print os.path.dirname(boto.__file__)')/connection.py \
+  "$(python -c 'import boto; import os; print os.path.dirname(boto.__file__)')/connection.py" \
   < /docker-registry/contrib/boto_header_patch.diff
 
 # cleanup. indicate that python is a required package.

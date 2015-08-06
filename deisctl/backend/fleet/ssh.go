@@ -13,44 +13,8 @@ import (
 )
 
 // SSH opens an interactive shell to a machine in the cluster
-func (c *FleetClient) SSH(name string) (err error) {
-	var sshClient *ssh.SSHForwardingClient
-
-	timeout := time.Duration(Flags.SSHTimeout*1000) * time.Millisecond
-
-	ms, err := c.machineState(name)
-	if err != nil {
-		return err
-	}
-
-	// If name isn't a machine ID, try it as a unit instead
-	if ms == nil {
-		units, err := c.Units(name)
-
-		if err != nil {
-			return err
-		}
-
-		machID, err := c.findUnit(units[0])
-
-		if err != nil {
-			return err
-		}
-
-		ms, err = c.machineState(machID)
-
-		if err != nil || ms == nil {
-			return err
-		}
-	}
-
-	addr := ms.PublicIP
-
-	if tun := getTunnelFlag(); tun != "" {
-		sshClient, err = ssh.NewTunnelledSSHClient("core", tun, addr, getChecker(), false, timeout)
-	} else {
-		sshClient, err = ssh.NewSSHClient("core", addr, getChecker(), false, timeout)
-	}
+func (c *FleetClient) SSH(name string) error {
+	sshClient, err := c.sshConnect(name)
 	if err != nil {
 		return err
 	}
@@ -58,6 +22,57 @@ func (c *FleetClient) SSH(name string) (err error) {
 	defer sshClient.Close()
 	err = ssh.Shell(sshClient)
 	return err
+}
+
+func (c *FleetClient) SSHExec(name, cmd string) error {
+	fmt.Printf("Executing '%s' on container '%s'\n", cmd, name)
+
+	conn, err := c.sshConnect(name)
+	if err != nil {
+		return err
+	}
+
+	err, _ = ssh.Execute(conn, cmd)
+	return err
+}
+
+func (c *FleetClient) sshConnect(name string) (*ssh.SSHForwardingClient, error) {
+
+	timeout := time.Duration(Flags.SSHTimeout*1000) * time.Millisecond
+
+	ms, err := c.machineState(name)
+	if err != nil {
+		return nil, err
+	}
+
+	// If name isn't a machine ID, try it as a unit instead
+	if ms == nil {
+		units, err := c.Units(name)
+
+		if err != nil {
+			return nil, err
+		}
+
+		machID, err := c.findUnit(units[0])
+
+		if err != nil {
+			return nil, err
+		}
+
+		ms, err = c.machineState(machID)
+
+		if err != nil || ms == nil {
+			return nil, err
+		}
+	}
+
+	addr := ms.PublicIP
+
+	if tun := getTunnelFlag(); tun != "" {
+		return ssh.NewTunnelledSSHClient("core", tun, addr, getChecker(), false, timeout)
+	}
+	return ssh.NewSSHClient("core", addr, getChecker(), false, timeout)
+
 }
 
 // runCommand will attempt to run a command on a given machine. It will attempt
@@ -134,15 +149,14 @@ func (sshCommandRunner) RemoteCommand(cmd string, addr string, timeout time.Dura
 // findUnits returns the machine ID of a running unit
 func (c *FleetClient) findUnit(name string) (machID string, err error) {
 	u, err := c.Fleet.Unit(name)
-	if err != nil {
+	switch {
+	case err != nil:
 		return "", fmt.Errorf("Error retrieving Unit %s: %v", name, err)
-	}
-	if suToGlobal(*u) {
+	case suToGlobal(*u):
 		return "", fmt.Errorf("Unable to connect to global unit %s.\n", name)
-	}
-	if u == nil {
+	case u == nil:
 		return "", fmt.Errorf("Unit %s does not exist.\n", name)
-	} else if u.CurrentState == "" {
+	case u.CurrentState == "":
 		return "", fmt.Errorf("Unit %s does not appear to be running.\n", name)
 	}
 

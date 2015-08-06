@@ -53,7 +53,7 @@ deis keys:add {{.AuthKey}}.pub || true
 	// Clone the example app git repository locally.
 	{"", `
 if [ ! -d ./{{.ExampleApp}} ]; then
-  git clone https://github.com/deis/{{.ExampleApp}}.git
+  git clone https://github.com/brendangibat/{{.ExampleApp}}.git
 fi
 `},
 	// Remove the stale "deis" git remote if it exists.

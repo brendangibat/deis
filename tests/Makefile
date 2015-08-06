@@ -7,9 +7,9 @@ GO_FILES = $(wildcard *.go)
 GO_PACKAGES = dockercli etcdutils mock utils
 GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
 
-MOCK_STORE_IMAGE = $(IMAGE_PREFIX)mock-store:latest
-TEST_ETCD_IMAGE = $(IMAGE_PREFIX)test-etcd:latest
-TEST_POSTGRESQL_IMAGE = $(IMAGE_PREFIX)test-postgresql:latest
+MOCK_STORE_IMAGE = $(IMAGE_PREFIX)mock-store:$(BUILD_TAG)
+TEST_ETCD_IMAGE = $(IMAGE_PREFIX)test-etcd:$(BUILD_TAG)
+TEST_POSTGRESQL_IMAGE = $(IMAGE_PREFIX)test-postgresql:$(BUILD_TAG)
 
 test: test-smoke
 
@@ -23,6 +23,7 @@ test-full: test-style
 	godep go test -tags integration -v -run TestBuilds
 	godep go test -tags integration -v -run TestConfig
 	godep go test -tags integration -v -run TestDomains
+	godep go test -tags integration -v -run TestHealthcheck
 	godep go test -tags integration -v -run TestKeys
 	godep go test -tags integration -v -run TestPerms
 	godep go test -tags integration -v -run TestPs

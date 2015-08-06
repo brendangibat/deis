@@ -118,9 +118,9 @@ func NewClient() (
 		}
 		// Avoid fallback to SSL protocols < TLS1.0
 		tlsConfig.MinVersion = tls.VersionTLS10
-		cli = client.NewDockerCli(nil, stdoutPipe, nil, nil, proto, addr, &tlsConfig)
+		cli = client.NewDockerCli(nil, stdoutPipe, nil, "", proto, addr, &tlsConfig)
 	} else {
-		cli = client.NewDockerCli(nil, stdoutPipe, nil, nil, proto, addr, nil)
+		cli = client.NewDockerCli(nil, stdoutPipe, nil, "", proto, addr, nil)
 	}
 	return
 }
@@ -266,10 +266,10 @@ func GetImageID(t *testing.T, repo string) string {
 func RunTestEtcd(t *testing.T, name string, port string) {
 	var err error
 	cli, stdout, stdoutPipe := NewClient()
-	etcdImage := "deis/test-etcd:latest"
+	etcdImage := utils.ImagePrefix() + "test-etcd:" + utils.BuildTag()
 	ipaddr := utils.HostAddress()
 	etcdAddr := ipaddr + ":" + port
-	fmt.Printf("--- Running deis/test-etcd at %s\n", etcdAddr)
+	fmt.Printf("--- Running %s at %s\n", etcdImage, etcdAddr)
 	done2 := make(chan bool, 1)
 	go func() {
 		done2 <- true

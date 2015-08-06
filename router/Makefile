@@ -7,6 +7,8 @@ GO_FILES = $(wildcard *.go)
 GO_PACKAGES = logger tests
 GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
 
+SHELL_SCRIPTS = $(shell find "." -name '*.sh') $(wildcard image/bin/*)
+
 COMPONENT = $(notdir $(repo_path))
 IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
 DEV_IMAGE = $(REGISTRY)$(IMAGE)
@@ -14,7 +16,6 @@ BUILD_IMAGE = $(COMPONENT)-build
 BINARY_DEST_DIR = image/bin
 
 build: check-docker
-	cp -pR ../Godeps .
 	docker build -t $(BUILD_IMAGE) .
 	docker cp `docker run -d $(BUILD_IMAGE) /bin/bash`:/nginx.tgz image/
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix -v -ldflags '-s' -o $(BINARY_DEST_DIR)/boot boot.go || exit 1
@@ -24,7 +25,6 @@ build: check-docker
 	rm image/bin/boot
 
 clean: check-docker check-registry
-	rm -rf Godeps
 	docker rmi $(IMAGE)
 
 full-clean: check-docker check-registry
@@ -63,7 +63,7 @@ deploy: build dev-release restart
 test: test-style test-unit test-functional
 
 test-functional:
-	@docker history deis/test-etcd >/dev/null 2>&1 || docker pull deis/test-etcd:latest
+	@$(MAKE) -C ../tests/ test-etcd
 	GOPATH=`cd ../tests/ && godep path`:$(GOPATH) go test -v ./tests/...
 
 test-style:
@@ -72,6 +72,7 @@ test-style:
 	@$(GOFMT) $(GO_PACKAGES) $(GO_FILES) | read; if [ $$? == 0 ]; then echo "gofmt check failed."; exit 1; fi
 	$(GOVET) $(repo_path) $(GO_PACKAGES_REPO_PATH)
 	$(GOLINT) ./...
+	shellcheck $(SHELL_SCRIPTS)
 
 test-unit:
 	@echo no unit tests

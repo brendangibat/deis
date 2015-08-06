@@ -4,6 +4,8 @@ include ../includes.mk
 
 all: build run
 
+SHELL_SCRIPTS = $(wildcard bin/*) $(shell find "." -name '*.sh')
+
 COMPONENT = controller
 IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
 DEV_IMAGE = $(REGISTRY)$(IMAGE)
@@ -73,12 +75,13 @@ setup-venv:
 
 test-style: setup-venv
 	venv/bin/flake8
+	shellcheck $(SHELL_SCRIPTS)
 
 test-unit: setup-venv test-style
 	venv/bin/coverage run manage.py test --noinput api
 	venv/bin/coverage report -m
 
 test-functional:
-	@docker history deis/test-etcd >/dev/null 2>&1 || docker pull deis/test-etcd:latest
-	@docker history deis/test-postgresql >/dev/null 2>&1 || docker pull deis/test-postgresql:latest
+	@$(MAKE) -C ../tests/ test-etcd
+	@$(MAKE) -C ../tests/ test-postgresql
 	GOPATH=`cd ../tests/ && godep path`:$(GOPATH) go test -v ./tests/...

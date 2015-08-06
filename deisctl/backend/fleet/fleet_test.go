@@ -1,6 +1,7 @@
 package fleet
 
 import (
+	"bytes"
 	"fmt"
 	"sync"
 	"testing"
@@ -44,15 +45,36 @@ func (c *stubFleetClient) UnitStates() ([]*schema.UnitState, error) {
 
 	return c.testUnitStates, nil
 }
+
+type failingFleetClient struct {
+	stubFleetClient
+}
+
+func (c *failingFleetClient) SetUnitTargetState(name, target string) error {
+	if err := c.stubFleetClient.SetUnitTargetState(name, target); err != nil {
+		return err
+	}
+
+	last := len(c.testUnitStates) - 1
+	c.testUnitStates[last] = &schema.UnitState{
+		Name:               name,
+		SystemdSubState:    "failed",
+		SystemdActiveState: "failed",
+	}
+
+	return nil
+}
+
 func (c *stubFleetClient) SetUnitTargetState(name, target string) error {
 
 	var activeState string
 	var subState string
 
-	if target == "loaded" {
+	switch target {
+	case "loaded":
 		activeState = "inactive"
 		subState = "dead"
-	} else if target == "launched" {
+	case "launched":
 		activeState = "active"
 		subState = "running"
 	}
@@ -103,27 +125,49 @@ func (c *stubFleetClient) DestroyUnit(name string) error {
 	return nil
 }
 
-func logState(outchan chan string, errchan chan error, errOutput *string, mutex *sync.Mutex) {
-	for {
-		select {
-		case _, ok := <-outchan:
-			if !ok {
-				outchan = nil
-			}
-		case err, ok := <-errchan:
-			if !ok {
-				errchan = nil
-			}
-			if err != nil {
-				mutex.Lock()
-				*errOutput += err.Error()
-				mutex.Unlock()
-			}
-		}
-		if outchan == nil && errchan == nil {
-			break
-		}
+func newOutErr() *outErr {
+	return &outErr{
+		&syncBuffer{},
+		&syncBuffer{},
 	}
+}
+
+// Wrap output and error streams for ease of testing.
+type outErr struct {
+	out, ew buffer
+}
+
+// buffer represents a buffer for collecting written test output.
+//
+// This is used only in testing, so add more bytes.Buffer methods as needed.
+type buffer interface {
+	Bytes() []byte
+	String() string
+	Write([]byte) (int, error)
+}
+
+// syncBuffer simply synchronizes writes on a bytes.Buffer.
+type syncBuffer struct {
+	bytes.Buffer
+	mx sync.RWMutex
+}
+
+func (s *syncBuffer) Write(b []byte) (int, error) {
+	s.mx.Lock()
+	defer s.mx.Unlock()
+	return s.Buffer.Write(b)
+}
+
+func (s *syncBuffer) String() string {
+	s.mx.RLock()
+	defer s.mx.RUnlock()
+	return s.Buffer.String()
+}
+
+func (s *syncBuffer) Bytes() []byte {
+	s.mx.RLock()
+	defer s.mx.RUnlock()
+	return s.Buffer.Bytes()
 }
 
 func TestNewClient(t *testing.T) {

@@ -10,7 +10,7 @@ import (
 
 	"github.com/brendangibat/deis/deisctl/backend/fleet"
 	"github.com/brendangibat/deis/deisctl/client"
-	"github.com/brendangibat/deis/deisctl/utils"
+	"github.com/brendangibat/deis/pkg/prettyprint"
 	"github.com/brendangibat/deis/version"
 
 	docopt "github.com/docopt/docopt-go"
@@ -24,7 +24,7 @@ func main() {
 
 // Command executes the given deisctl command line.
 func Command(argv []string) int {
-	deisctlMotd := utils.DeisIfy("Deis Control Utility")
+	deisctlMotd := prettyprint.DeisIfy("Deis Control Utility")
 	usage := deisctlMotd + `
 Usage: deisctl [options] <command> [<args>...]
 
@@ -39,8 +39,12 @@ Commands, use "deisctl help <command>" to learn more:
   journal           print the log output of a component
   config            set platform or component values
   refresh-units     refresh unit files from GitHub
-  ssh               open an interacive shell on a machine in the cluster
+  ssh               open an interactive shell on a machine in the cluster
+  dock              open an interactive shell on a container in the cluster
   help              show the help screen for a command
+  upgrade-prep      prepare a running cluster for upgrade
+  upgrade-takeover  allow an upgrade to gracefully takeover a running cluster
+  rolling-restart   perform a rolling restart of a Deis component (currently only router is supported)
 
 Options:
   -h --help                   show this help screen
@@ -112,6 +116,14 @@ Options:
 		err = c.RefreshUnits(argv)
 	case "ssh":
 		err = c.SSH(argv)
+	case "dock":
+		err = c.Dock(argv)
+	case "upgrade-prep":
+		err = c.UpgradePrep(argv)
+	case "upgrade-takeover":
+		err = c.UpgradeTakeover(argv)
+	case "rolling-restart":
+		err = c.RollingRestart(argv)
 	case "help":
 		fmt.Print(usage)
 		return 0

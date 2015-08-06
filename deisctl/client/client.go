@@ -4,11 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/brendangibat/deis/deisctl/backend"
 	"github.com/brendangibat/deis/deisctl/backend/fleet"
 	"github.com/brendangibat/deis/deisctl/cmd"
 	"github.com/brendangibat/deis/deisctl/units"
+	"github.com/brendangibat/deis/deisctl/config"
+	"github.com/deis/brendangibat/deisctl/config/etcd"
 
 	docopt "github.com/docopt/docopt-go"
 )
@@ -27,11 +30,15 @@ type DeisCtlClient interface {
 	Status(argv []string) error
 	Stop(argv []string) error
 	Uninstall(argv []string) error
+	UpgradePrep(argv []string) error
+	UpgradeTakeover(argv []string) error
+	RollingRestart(argv []string) error
 }
 
 // Client uses a backend to implement the DeisCtlClient interface.
 type Client struct {
-	Backend backend.Backend
+	Backend       backend.Backend
+	configBackend config.Backend
 }
 
 // NewClient returns a Client using the requested backend.
@@ -53,7 +60,56 @@ func NewClient(requestedBackend string) (*Client, error) {
 	default:
 		return nil, errors.New("invalid backend")
 	}
-	return &Client{Backend: backend}, nil
+
+	cb, err := etcd.NewConfigBackend()
+	if err != nil {
+		return nil, err
+	}
+
+	return &Client{Backend: backend, configBackend: cb}, nil
+}
+
+// UpgradePrep prepares a running cluster to be upgraded
+func (c *Client) UpgradePrep(argv []string) error {
+	usage := `Prepare platform for graceful upgrade.
+
+Usage:
+  deisctl upgrade-prep [options]
+`
+	if _, err := docopt.Parse(usage, argv, true, "", false); err != nil {
+		return err
+	}
+
+	return cmd.UpgradePrep(c.Backend)
+}
+
+// UpgradeTakeover gracefully restarts a cluster prepared with upgrade-prep
+func (c *Client) UpgradeTakeover(argv []string) error {
+	usage := `Complete the upgrade of a prepped cluster.
+
+Usage:
+  deisctl upgrade-takeover [options]
+`
+	if _, err := docopt.Parse(usage, argv, true, "", false); err != nil {
+		return err
+	}
+
+	return cmd.UpgradeTakeover(c.Backend, c.configBackend)
+}
+
+// RollingRestart attempts a rolling restart of an instance unit
+func (c *Client) RollingRestart(argv []string) error {
+	usage := `Perform a rolling restart of an instance unit.
+
+Usage:
+  deisctl rolling-restart <target>
+`
+	args, err := docopt.Parse(usage, argv, true, "", false)
+	if err != nil {
+		return err
+	}
+
+	return cmd.RollingRestart(args["<target>"].(string), c.Backend)
 }
 
 // Config gets or sets a configuration value from the cluster.
@@ -92,24 +148,25 @@ Examples:
 	var action string
 	var key []string
 
-	if args["set"] == true {
+	switch {
+	case args["set"] == true:
 		action = "set"
 		key = args["<key=val>"].([]string)
-	} else if args["rm"] == true {
+	case args["rm"] == true:
 		action = "rm"
 		key = args["<key>"].([]string)
-	} else {
+	default:
 		action = "get"
 		key = args["<key>"].([]string)
 	}
 
-	return cmd.Config(args["<target>"].(string), action, key)
+	return cmd.Config(args["<target>"].(string), action, key, c.configBackend)
 }
 
 // Install loads the definitions of components from local unit files.
 // After Install, the components will be available to Start.
 func (c *Client) Install(argv []string) error {
-	usage := `Loads the definitions of components from local unit files.
+	usage := fmt.Sprintf(`Loads the definitions of components from local unit files.
 
 After install, the components will be available to start.
 
@@ -120,14 +177,25 @@ After install, the components will be available to start.
 
 Usage:
   deisctl install [<target>...] [options]
-`
+
+Options:
+  --router-mesh-size=<num>  Number of routers to be loaded when installing the platform [default: %d].
+`, cmd.DefaultRouterMeshSize)
 	// parse command-line arguments
 	args, err := docopt.Parse(usage, argv, true, "", false)
 	if err != nil {
 		return err
 	}
 
-	return cmd.Install(args["<target>"].([]string), c.Backend, cmd.CheckRequiredKeys)
+	meshSizeArg, _ := args["--router-mesh-size"].(string)
+	parsedValue, err := strconv.ParseUint(meshSizeArg, 0, 8)
+	if err != nil || parsedValue < 1 {
+		fmt.Print("Error: argument --router-mesh-size: invalid value, make sure the value is an integer between 1 and 255.\n")
+		return err
+	}
+	cmd.RouterMeshSize = uint8(parsedValue)
+
+	return cmd.Install(args["<target>"].([]string), c.Backend, c.configBackend, cmd.CheckRequiredKeys)
 }
 
 // Journal prints log output for the specified components.
@@ -178,7 +246,7 @@ Usage:
 Options:
   -p --path=<target>   where to save unit files [default: $HOME/.deis/units]
   -t --tag=<tag>       git tag, branch, or SHA to use when downloading unit files
-                       [default: master]
+                       [default: v1.9.0]
 `
 	// parse command-line arguments
 	args, err := docopt.Parse(usage, argv, true, "", false)
@@ -228,16 +296,59 @@ Usage:
 func (c *Client) SSH(argv []string) error {
 	usage := `Open an interactive shell on a machine in the cluster given a unit or machine id.
 
+If an optional <command> is provided, that command is run remotely, and the results returned.
+
 Usage:
-  deisctl ssh <target>
+  deisctl ssh <target> [<command>...]
 `
 	// parse command-line arguments
-	args, err := docopt.Parse(usage, argv, true, "", false)
+	args, err := docopt.Parse(usage, argv, true, "", true)
 	if err != nil {
 		return err
 	}
 
-	return cmd.SSH(args["<target>"].(string), c.Backend)
+	target := args["<target>"].(string)
+	// handle help explicitly since docopt parsing is relaxed
+	if target == "--help" {
+		fmt.Println(usage)
+		os.Exit(0)
+	}
+
+	var vargs []string
+	if v, ok := args["<command>"]; ok {
+		vargs = v.([]string)
+	}
+
+	return cmd.SSH(target, vargs, c.Backend)
+}
+
+func (c *Client) Dock(argv []string) error {
+	usage := `Connect to the named docker container and run commands on it.
+
+This is equivalent to running 'docker exec -it <target> <command>'.
+
+Usage:
+  deisctl dock <target> [<command>...]
+`
+	// parse command-line arguments
+	args, err := docopt.Parse(usage, argv, true, "", true)
+	if err != nil {
+		return err
+	}
+
+	target := args["<target>"].(string)
+	// handle help explicitly since docopt parsing is relaxed
+	if target == "--help" {
+		fmt.Println(usage)
+		os.Exit(0)
+	}
+
+	var vargs []string
+	if v, ok := args["<command>"]; ok {
+		vargs = v.([]string)
+	}
+
+	return cmd.Dock(target, vargs, c.Backend)
 }
 
 // Start activates the specified components.

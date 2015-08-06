@@ -1,7 +1,5 @@
 FROM alpine:3.1
 
-ENV DEBIAN_FRONTEND noninteractive
-
 # install common packages
 RUN apk add --update-cache curl bash sudo && rm -rf /var/cache/apk/*
 
@@ -31,4 +29,4 @@ ADD . /app
 # Create static resources
 RUN /app/manage.py collectstatic --settings=deis.settings --noinput
 
-ENV DEIS_RELEASE 1.9.0-dev
+ENV DEIS_RELEASE 1.9.0

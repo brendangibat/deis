@@ -80,7 +80,7 @@ import signal
 if hasattr(signal, 'SIGPIPE') and hasattr(signal, 'SIG_DFL'):
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
-__version__ = '1.9.0-dev'
+__version__ = '1.9.0'
 
 # what version of the API is this client compatible with?
 __api_version__ = '1.5'
@@ -1093,7 +1093,6 @@ Make sure that the Controller URI is correct and the server is running.
 
         certs:list            list SSL certificates for an app
         certs:add             add an SSL certificate to an app
-        certs:update          update an existing certifcate for an app
         certs:remove          remove an SSL certificate from an app
 
         Use `deis help [command]` to learn more.
